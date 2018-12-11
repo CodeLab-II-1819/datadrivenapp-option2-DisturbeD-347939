@@ -5,8 +5,8 @@
  SPDX-License-Identifier:	MIT
 */
 
-
 #include "ofApp.h"
+#include "Internet.h"
 
 //initial app setup
 void ofApp::setup()
@@ -29,6 +29,9 @@ void ofApp::setup()
 
     // This starts a simple search for an emoticon.
     client.search(":)");
+	ofxTwitter::SearchQuery query(":)");
+	query.setLanguage("pt");
+	client.search(query);
     // Tweets are retured in the callbacks onStatus(..), onError(...), etc.
 
     /*
@@ -50,6 +53,17 @@ void ofApp::setup()
      In particular search.h
     */
 
+	if (internetConnection == NULL)
+	{
+		cout << "checking!" << endl;
+		internetConnection = checkInternetConnection();
+		cout << internetConnection << endl;
+	}
+}
+
+void ofApp::update()
+{
+	
 }
 
 /*
@@ -59,35 +73,29 @@ void ofApp::setup()
 */
 void ofApp::draw()
 {
-    //sets background to black
-    ofBackground(0);
-
-    //counts number of tweets
-    int total = count + countMissed;
-
-    //string stream used to display number of tweets recived
-    std::stringstream ss;
-    ss << "  Received: " << count << std::endl;
-    ss << "    Missed: " << countMissed << std::endl;
-    ss << "     Total: " << total << std::endl;
-    
-    /*
-     Draw string stream info to the GUI window at x: 14 / y: 14
-     Bitmap string is default text with limited customisation optimisations
-     Load in fonts to enhance design
-    */
-    ofDrawBitmapString(ss.str(), 14, 14);
+	ofSetBackgroundColor(0);
+	ofSetColor(0, 255, 0);
+	if (!internetConnection)
+	{
+		ofDrawBitmapString("No internet connection...", ofGetScreenWidth() / 2, ofGetScreenHeight() / 2);
+	}
+	else
+	{
+		ofDrawBitmapString("You're connected!", ofGetScreenWidth() / 2, ofGetScreenHeight() / 2);
+	}
 }
 
-//This function is called everytime the a new tweet is recieved
+//This function is called everytime a new tweet is received
 void ofApp::onStatus(const ofxTwitter::Status& status)
 {
-    //increase tweet count
-    count++;
-    
     //output the tweet author and text
     std::cout << "User: " << status.user()->name() << endl;
     std::cout << "Tweet: " << status.text() << endl;
+	cout << "Fav / Ret: " << status.favoriteCount() << " " << status.retweetCount() << endl;
+	cout << "Source: " << status.source() << endl;
+	cout << "URL: " << status.url() << endl;
+	cout << "Created: " << &Poco::DateTime::dayOfWeek << endl;
+	cout << "Location: " << status.coordinates() << endl;
     std::cout << "\n -----------------------------\n" << endl;
     
     /*
@@ -113,4 +121,9 @@ void ofApp::onException(const std::exception& notice)
 void ofApp::onMessage(const ofJson& json)
 {
 	// This is the raw message json and is ignored here.
+}
+
+void ofApp::varSetup()
+{
+
 }
