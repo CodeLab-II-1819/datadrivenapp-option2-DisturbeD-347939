@@ -7,9 +7,13 @@ void ofApp::setup()
 	ofSetBackgroundColor(colourBackground);
 	ofSetFrameRate(60);
 
+	//Default colours
 	colourText.r = 29;
 	colourText.g = 161;
 	colourText.b = 242;
+	colourBackground.r = 255;
+	colourBackground.g = 255;
+	colourBackground.b = 255;
 
 	//Twitter settings
 	client.registerSearchEvents(this);
@@ -60,6 +64,21 @@ void ofApp::draw()
 		ofDrawBitmapString(xMouse, xMouse + 15, yMouse - 30);
 		ofDrawBitmapString(yMouse, xMouse + 15, yMouse - 20);
 		drawMenu();
+		
+		switch (currentTab)
+		{
+		case HOME:
+			break;
+		case SEARCH:
+			break;
+		case SETTINGS:
+			break;
+		case QUIT:
+			ofExit();
+			break;
+		default:
+			break;
+		}
 		
 	/*	ofSetColor(0, 255, 0);
 		ofDrawBitmapString(ofGetElapsedTimeMillis(), 10, 10);
@@ -228,22 +247,51 @@ void ofApp::drawMenu()
 	if (Home.inside(xMouseClick, yMouseClick))
 	{
 		cout << "Inside home" << endl;
+		currentTab = HOME;
+		xMouseClick = 0;
+		yMouseClick = 0;
+	}
+	else if (Search.inside(xMouseClick, yMouseClick))
+	{
+		cout << "Inside search" << endl;
+		currentTab = SEARCH;
+		xMouseClick = 0;
+		yMouseClick = 0;
+	}
+	else if (Settings.inside(xMouseClick, yMouseClick))
+	{
+		cout << "Inside settings" << endl;
+		currentTab = SETTINGS;
+		xMouseClick = 0;
+		yMouseClick = 0;
+	}
+	else if (Quit.inside(xMouseClick, yMouseClick))
+	{
+		cout << "Inside quit" << endl;
+		currentTab = QUIT;
+		xMouseClick = 0;
+		yMouseClick = 0;
 	}
 }
 
 void ofApp::onError(const ofxTwitter::Error& error)
 {
-
+	ofLogError("ofApp::onError") << "Error: " << error.code() << " " << error.message();
 }
-void ofApp::onException(const std::exception& exception)
+void ofApp::onMessage(const ofJson& json)
 {
-
+	// This is the raw message json and is ignored here.
+}
+void ofApp::onException(const std::exception& notice)
+{
+	ofLogError("ofApp::onException") << "Exception: " << notice.what();
 }
 
-void ofApp::mousePressed(int x, int y)
+void ofApp::mousePressed(int x, int y, int button)
 {
 	xMouseClick = x;
 	yMouseClick = y;
+	cout << xMouseClick << " " << yMouseClick << endl;
 }
 void ofApp::mouseMoved(int x, int y)
 {

@@ -37,7 +37,7 @@ public:
     void onException(const std::exception& exception);
 	void onMessage(const ofJson& json);
 	void mouseMoved(int x, int y);
-	void mousePressed(int x, int y);
+	void mousePressed(int x, int y, int button);
 
 	//Functions
 	void drawMenu();
@@ -70,5 +70,14 @@ public:
 
 	//Tweet vector
 	vector<Tweets> myTweets;
+
+	//Enumerators
+	enum tabs {
+		HOME = 1,
+		SEARCH = 2,
+		SETTINGS = 3,
+		QUIT = 4
+	};
+	tabs currentTab = HOME;
 
 };
