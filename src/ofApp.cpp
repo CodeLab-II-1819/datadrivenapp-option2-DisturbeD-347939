@@ -19,7 +19,7 @@ void ofApp::setup()
 	client.registerSearchEvents(this);
 	client.setCredentialsFromFile("credentials.json");
 	client.setPollingInterval(6000);
-	client.search("hello");
+	client.search("a");
 
 	//Check internet connection
 	if (internetConnection == NULL) 
@@ -60,14 +60,18 @@ void ofApp::draw()
 	}
 	else
 	{
-		ofSetColor(colourText);
-		ofDrawBitmapString(xMouse, xMouse + 15, yMouse - 30);
-		ofDrawBitmapString(yMouse, xMouse + 15, yMouse - 20);
+		ofDrawBitmapString(xMouse, xMouse + 15, yMouse - 30); //REMOVEEEEE
+		ofDrawBitmapString(yMouse, xMouse + 15, yMouse - 20); //REMOVEEEEE
 		drawMenu();
+
+		ofRectangle feedMenu (200, 160, 1100, 40);
 		
 		switch (currentTab)
 		{
 		case HOME:
+			ofNoFill();
+			ofDrawRectangle(200, 200, 1100, 750);
+			ofDrawRectangle(feedMenu);
 			break;
 		case SEARCH:
 			break;
@@ -80,71 +84,6 @@ void ofApp::draw()
 			break;
 		}
 		
-	/*	ofSetColor(0, 255, 0);
-		ofDrawBitmapString(ofGetElapsedTimeMillis(), 10, 10);
-		ofDrawBitmapString(xMouse, xMouse + 15, yMouse - 30);
-		ofDrawBitmapString(yMouse, xMouse + 15, yMouse - 20);
-		ofNoFill();
-		ofDrawBitmapString("Recents tweets", 100, 100);
-		for (int i = 1; i < myTweets.size() + 1 && i < 15; i++)
-		{
-			ofDrawRectangle(100, 120, 200, 50 * i);
-			ofDrawBitmapString(myTweets[i - 1].time, 250, 100 + (50 * i));
-			if (myTweets[i - 1].text.size() > 10)
-			{
-				string firstHalf;
-				string secondHalf;
-				for (int j = 0; j < myTweets[i - 1].text.size(); j++)
-				{
-					if (j <= myTweets[i - 1].text.size() / 2)
-					{
-						firstHalf += myTweets[i - 1].text.at(j);
-						if (j == myTweets[i - 1].text.size() / 2)
-						{
-							if (myTweets[i - 1].text.at(j) != ' ')
-							{
-								if (myTweets[i - 1].text.at(j + 1) != ' ')
-								{
-									firstHalf += '-';
-								}
-							}
-						}
-					}
-					else
-					{
-						secondHalf += myTweets[i - 1].text.at(j);
-					}
-				}
-				ofDrawBitmapString(firstHalf, 150, 90 + (50 * i));
-				ofDrawBitmapString(secondHalf, 150, 110 + (50 * i));
-			}
-			else
-			{
-				ofDrawBitmapString(myTweets[i - 1].text, 150, 100 + (50 * i));
-			}
-		}
-		if (queuedTweets > 0)
-		{
-			int y = 172;
-			ofDrawBitmapString("+", 165, 640);
-			ofDrawBitmapString(queuedTweets, 172, 640);
-			if (queuedTweets <= 9)
-			{
-				ofDrawBitmapString(" tweets queued!", 172 + 10, 640);
-			}
-			else if (queuedTweets >= 10 && queuedTweets <= 99)
-			{
-				ofDrawBitmapString(" tweets queued!", 172 + 12, 640);
-			}
-			else if (queuedTweets >= 100 && queuedTweets <= 999)
-			{
-				ofDrawBitmapString(" tweets queued!", 172 + 14, 640);
-			}
-			else if (queuedTweets >= 1000 && queuedTweets <= 9999)
-			{
-				ofDrawBitmapString(" tweets queued!", 172 + 16, 640);
-			}
-		}*/
 	}
 }
 
@@ -171,6 +110,7 @@ void ofApp::drawMenu()
 	font.loadFont("HelveticaNeueUltraLight.ttf", 40);
 	ofNoFill();
 	ofDrawRectangle(1, 1, 1500, 60);
+	ofDrawRectangle(1, 1, 1498, 998);
 
 	//Home tab
 	ofRectangle Home(1, 1, 175, 60);
@@ -305,7 +245,6 @@ Tweets::Tweets(double time, string tweet, bool startCountdown)
 	this->text = tweet;
 	this->time = time;
 }
-
 void Tweets::tweetTimer(double current_time)
 {
 	if (startCountdown)
@@ -321,4 +260,5 @@ void Tweets::tweetTimer(double current_time)
 		startCountdown = true;
 	}
 }
+
 
