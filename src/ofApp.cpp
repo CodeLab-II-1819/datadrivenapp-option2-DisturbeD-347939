@@ -19,7 +19,8 @@ void ofApp::setup()
 	client.registerSearchEvents(this);
 	client.setCredentialsFromFile("credentials.json");
 	client.setPollingInterval(6000);
-	client.search("a");
+	client.search("adsfadshsadhdafh");
+	
 
 	//Check internet connection
 	if (internetConnection == NULL) 
@@ -31,6 +32,14 @@ void ofApp::setup()
 
 	//Load images
 	quit.load("images/quit.png");
+	retweet.load("images/retweet.png");
+	favourite.load("images/favourite.png");
+	coordinates.load("images/coordinates.png");
+	language.load("images/language.png");
+	url.load("images/url.png");
+	hyperlink.load("images/hyperlink.png");
+	reply.load("images/reply.png");
+	time.load("images/time.png");
 }
 
 void ofApp::update()
@@ -46,8 +55,6 @@ void ofApp::update()
 		}
 	}
 	queuedTweets = myTweets.size() - 15;
-
-	//Check if mouse pressed
 }
 
 void ofApp::draw()
@@ -63,15 +70,47 @@ void ofApp::draw()
 		ofDrawBitmapString(xMouse, xMouse + 15, yMouse - 30); //REMOVEEEEE
 		ofDrawBitmapString(yMouse, xMouse + 15, yMouse - 20); //REMOVEEEEE
 		drawMenu();
-
-		ofRectangle feedMenu (200, 160, 1100, 40);
 		
 		switch (currentTab)
 		{
 		case HOME:
+			//Draw text feed
 			ofNoFill();
-			ofDrawRectangle(200, 200, 1100, 750);
-			ofDrawRectangle(feedMenu);
+			ofDrawRectangle(100, 200, 1300, 650); //Feed box
+			ofDrawRectangle(100, 160, 150, 40); //Username box
+			ofDrawRectangle(250, 160, 750, 40); //Text box
+			ofDrawRectangle(1000, 160, 50, 40); //Language box
+			ofDrawRectangle(1050, 160, 100, 40); //Place box
+			ofDrawRectangle(1150, 160, 50, 40); //Url box
+			ofDrawRectangle(1200, 160, 50, 40); //Reply box
+			ofDrawRectangle(1250, 160, 50, 40); //Retweet box
+			ofDrawRectangle(1300, 160, 50, 40); //Favorite box
+			ofDrawRectangle(1350, 160, 50, 40); //Timestamp box
+			font.loadFont("HelveticaNeueUltraLight.ttf", 20);
+			font.drawString("Username", 120, 190);
+			font.drawString("Tweet", 605, 190);
+			language.draw(1010, 170, 30, 20);
+			coordinates.draw(1083, 165, 30, 30);
+			url.draw(1155, 165, 40, 30);
+			reply.draw(1210, 170, 30, 20);
+			retweet.draw(1260, 160, 30, 40);
+			favourite.draw(1300, 160, 50, 40);
+			time.draw(1350, 160, 50, 40);
+
+			/**********************************************************************************************/
+
+			//Display tweets
+			font.loadFont("HelveticaNeueUltraLight.ttf", 12);
+			for (int i = 0; i < 10; i++)
+			{
+				if (i < myTweets.size())
+				{
+					ofSetColor(colourText);
+					font.drawString(myTweets[i].text, 260, 227 + (65 * i));
+					ofDrawRectangle(250, 200 + (65 * i), 750, 65);
+				}
+			}
+
 			break;
 		case SEARCH:
 			break;
@@ -184,6 +223,8 @@ void ofApp::drawMenu()
 		quit.draw(1440, 11, 39, 40);
 	}
 
+
+	//Check if mouse pressed inside one of the tabs
 	if (Home.inside(xMouseClick, yMouseClick))
 	{
 		cout << "Inside home" << endl;
@@ -260,5 +301,3 @@ void Tweets::tweetTimer(double current_time)
 		startCountdown = true;
 	}
 }
-
-

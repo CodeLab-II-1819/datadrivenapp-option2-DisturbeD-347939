@@ -1,13 +1,4 @@
-/*
- Starter code for Data Driven App assignment CodeLab II
- Based on basic example of ofxTwitter by Christopher Baker
- <https://christopherbaker.net>
- SPDX-License-Identifier:    MIT
- */
-
-
 #pragma once
-
 
 #include "ofMain.h"
 #include "ofxTwitter.h"
@@ -16,7 +7,7 @@ class Tweets
 {
 public:
 	string text;
-	double interval = 5000;
+	double interval = 5500;
 	double time;
 	bool selfDestruction = false;
 	bool startCountdown = false;
@@ -44,6 +35,14 @@ public:
 
 	//Images
 	ofImage quit;
+	ofImage reply;
+	ofImage retweet;
+	ofImage favourite;
+	ofImage url;
+	ofImage hyperlink;
+	ofImage coordinates;
+	ofImage language;
+	ofImage time;
 
 	int queuedTweets;
 	int count = 0;
