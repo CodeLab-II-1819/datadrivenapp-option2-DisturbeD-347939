@@ -1,5 +1,7 @@
 #include "ofApp.h"
 #include "Internet.h"
+#include <cstdlib>
+#include <stdlib.h>
 
 void ofApp::setup()
 {
@@ -62,6 +64,7 @@ void ofApp::update()
 
 void ofApp::draw()
 {
+	array<ofRectangle, 10> myURLS;
 	if (!internetConnection)
 	{
 		ofSetBackgroundColor(0);
@@ -110,10 +113,48 @@ void ofApp::draw()
 			{
 				if (i < myTweets.size())
 				{
-					//Draw tweet text
 					ofSetColor(colourText);
+
+					//Draw tweet user
+					font.drawString(myTweets[i].displayName, 110, 227 + (65 * i));
+					font.drawString(myTweets[i].username, 110, 247 + (65 * i));
+					ofDrawRectangle(100, 200 + (65 * i), 150, 65);
+
+					//Draw tweet text
 					font.drawString(myTweets[i].text, 260, 227 + (65 * i));
 					ofDrawRectangle(250, 200 + (65 * i), 750, 65);
+
+					//Draw tweet type
+					font.drawString(myTweets[i].type, 960, 235 + (65 * i));
+
+					//Draw tweet language
+					font.drawString(myTweets[i].language, 1015, 240 + (65 * i));
+					ofDrawRectangle(1000, 200 + (65 * i), 50, 65);
+
+					//Draw tweet language
+					font.drawString(myTweets[i].place, 1060, 240 + (65 * i));
+					ofDrawRectangle(1050, 200 + (65 * i), 100, 65);
+
+					//Draw url icon
+					hyperlink.draw(1160, 218 + (65 * i), 30, 30);
+					ofDrawRectangle(1150, 200 + (65 * i), 50, 65);
+					myURLS[i].setX(1150);
+					myURLS[i].setY(200 + (65 * i));
+					myURLS[i].setWidth(50);
+					myURLS[i].setHeight(65);
+				}
+			}
+			
+			for (int i = 0; i < 10; i++)
+			{
+				if (myURLS[i].inside(xMouseClick, yMouseClick))
+				{
+					cout << "inside" << endl;
+					xMouseClick = 0;
+					yMouseClick = 0;
+					
+
+					system("start");
 				}
 			}
 
@@ -143,7 +184,16 @@ void ofApp::onStatus(const ofxTwitter::Status& status)
 	{
 		placeName = status.place()->name();
 		countryCode = status.place()->countryCode();
-		placeName.append("," + countryCode);
+		if (placeName.size() > 6) //If it's bigger than 6 characters cut it down to have space for the country too.
+		{
+			placeName.erase(6, placeName.size() - 6);
+			placeName.append("..");
+			placeName.append("" + countryCode);
+		}
+		else
+		{
+			placeName.append("," + countryCode);
+		}
 		cout << placeName << endl;
 	}
 
@@ -294,31 +344,35 @@ Tweets::Tweets(double current_time, bool startCountdown, string tweet, Poco::Dat
 {
 	//Get username and nickname
 	this->username = username;
+	this->username.insert(0, "@");
+	if (displayName.size() > 15) //Cut the display name to 15 characters
+	{
+		displayName.erase(15, displayName.size() - 15);
+		displayName.append("...");
+	}
 	this->displayName = displayName;
 
 	//Handle text
 	this->text = tweet;
-	for (int i = 0; i < 2; i++) //Check tweet type
+	cout << text[0] << endl;
+	if (text[0] == 'R' && text[1] == 'T') //Check if is a retweet
 	{
-		if (text[i] == 'R' && text[i + 1] == 'T') //Check if is a retweet
+		type = "RT";
+		while (text[0] != ':') //Remove retweeted from text for more text information
 		{
-			type = "RT";
-			while (text[0] != ':') //Remove retweeted from text for more text information
-			{
-				text.erase(0, 1);
-			}
 			text.erase(0, 1);
-			break;
 		}
-		else if(text[i] == '@') //Check if is a mention
-		{
-			type = "MT";
-		}
-		else //If nothing above works it is a normal tweet
-		{
-			type = "TT";
-		}
+		text.erase(0, 1);
 	}
+	else if(text[0] == '\x40') //Check if is a mention
+	{
+		type = "MT";
+	}
+	else //If nothing above works it is a normal tweet
+	{
+		type = "TT";
+	}
+	
 	bool biggerThanItShould = false; 
 	if (text.size() > 85) //If tweet is bigger than it should (85 characters) turn this bool true
 	{
@@ -334,15 +388,21 @@ Tweets::Tweets(double current_time, bool startCountdown, string tweet, Poco::Dat
 		{
 			text.erase(found, text.size() - found); //Erase everything below a new line and add warning
 		}
-		text.append("\n Click url to see more...");
+		text.append("\n Check url to see more...");
 	}
 
 	if (text[text.size() - 2] != '.' && biggerThanItShould) //Check if has "Click url to see more", if not and text was bigger than it should, add it
 	{
-		text.append("...\n Click url to see more...");
+		text.append("...\n Check url to see more...");
 	}
 
 	//Get language
+	for (int i = 0; i < language.size(); i++) //Upper case the language letters
+	{
+		char tempChar = toupper(language[i]);
+		string tempString(1, tempChar);
+		language.replace(i, 1, tempString);
+	}
 	this->language = language;
 
 	//Get place
