@@ -19,15 +19,13 @@ void ofApp::setup()
 	client.registerSearchEvents(this);
 	client.setCredentialsFromFile("credentials.json");
 	client.setPollingInterval(6000);
-	client.search("adsfadshsadhdafh");
+	client.search("location");
 	
 
 	//Check internet connection
 	if (internetConnection == NULL) 
 	{
-		cout << "checking!" << endl;
 		internetConnection = checkInternetConnection();
-		cout << internetConnection << endl;
 	}
 
 	//Load images
@@ -44,17 +42,22 @@ void ofApp::setup()
 
 void ofApp::update()
 {
+	currentTab == HOME ? updateTweets = true : updateTweets = false;
+
 	//Update twitter times
-	for (int i = 0; i < myTweets.size() && i < 15; i++)
+	if (updateTweets)
 	{
-		myTweets[i].tweetTimer(ofGetElapsedTimeMillis());
-		if (myTweets[i].selfDestruction)
+		for (int i = 0; i < myTweets.size() && i < 10; i++)
 		{
-			myTweets.erase(myTweets.begin() + i);
-			i--;
+			myTweets[i].tweetTimer(ofGetElapsedTimeMillis());
+			if (myTweets[i].selfDestruction)
+			{
+				myTweets.erase(myTweets.begin() + i);
+				i--;
+			}
 		}
+		queuedTweets = myTweets.size() - 15;
 	}
-	queuedTweets = myTweets.size() - 15;
 }
 
 void ofApp::draw()
@@ -74,6 +77,8 @@ void ofApp::draw()
 		switch (currentTab)
 		{
 		case HOME:
+
+
 			//Draw text feed
 			ofNoFill();
 			ofDrawRectangle(100, 200, 1300, 650); //Feed box
@@ -86,7 +91,7 @@ void ofApp::draw()
 			ofDrawRectangle(1250, 160, 50, 40); //Retweet box
 			ofDrawRectangle(1300, 160, 50, 40); //Favorite box
 			ofDrawRectangle(1350, 160, 50, 40); //Timestamp box
-			font.loadFont("HelveticaNeueUltraLight.ttf", 20);
+			font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 20);
 			font.drawString("Username", 120, 190);
 			font.drawString("Tweet", 605, 190);
 			language.draw(1010, 170, 30, 20);
@@ -100,11 +105,12 @@ void ofApp::draw()
 			/**********************************************************************************************/
 
 			//Display tweets
-			font.loadFont("HelveticaNeueUltraLight.ttf", 12);
+			font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
 			for (int i = 0; i < 10; i++)
 			{
 				if (i < myTweets.size())
 				{
+					//Draw tweet text
 					ofSetColor(colourText);
 					font.drawString(myTweets[i].text, 260, 227 + (65 * i));
 					ofDrawRectangle(250, 200 + (65 * i), 750, 65);
@@ -130,23 +136,26 @@ void ofApp::draw()
 void ofApp::onStatus(const ofxTwitter::Status& status)
 {
 	count++;
-	if (myTweets.size() >= 10)
+
+	string placeName = "N/A";
+	string countryCode = "";
+	if (status.place() != 0) //Check if there is any location available before passing parameters
 	{
-		myTweets.push_back(Tweets(ofGetElapsedTimeMillis(), status.text(), false));
+		placeName = status.place()->name();
+		countryCode = status.place()->countryCode();
+		placeName.append("," + countryCode);
+		cout << placeName << endl;
 	}
-	else
-	{
-		myTweets.push_back(Tweets(ofGetElapsedTimeMillis(), status.text(), true));
-	}
-	//ofLogNotice("ofApp::onStatus") << "Text: " << status.text();
-	//ofLogNotice("ofApp::onStatus") << "\tPlace: " << (status.place() ? ofToString(status.place()->fullName()) : "NONE");
+
+	myTweets.size() >= 10 ? myTweets.push_back(Tweets(ofGetElapsedTimeMillis(), false, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName)) : myTweets.push_back(Tweets(ofGetElapsedTimeMillis(), true, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName));
+
 }
 
-//DrawMenu
+//Draw navigation bar
 void ofApp::drawMenu()
 {
 	ofSetColor(colourText);
-	font.loadFont("HelveticaNeueUltraLight.ttf", 40);
+	font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 40);
 	ofNoFill();
 	ofDrawRectangle(1, 1, 1500, 60);
 	ofDrawRectangle(1, 1, 1498, 998);
@@ -227,34 +236,32 @@ void ofApp::drawMenu()
 	//Check if mouse pressed inside one of the tabs
 	if (Home.inside(xMouseClick, yMouseClick))
 	{
-		cout << "Inside home" << endl;
 		currentTab = HOME;
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
 	else if (Search.inside(xMouseClick, yMouseClick))
 	{
-		cout << "Inside search" << endl;
 		currentTab = SEARCH;
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
 	else if (Settings.inside(xMouseClick, yMouseClick))
 	{
-		cout << "Inside settings" << endl;
 		currentTab = SETTINGS;
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
 	else if (Quit.inside(xMouseClick, yMouseClick))
 	{
-		cout << "Inside quit" << endl;
 		currentTab = QUIT;
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
 }
+//COMPLETE
 
+//Handle errors and exceptions
 void ofApp::onError(const ofxTwitter::Error& error)
 {
 	ofLogError("ofApp::onError") << "Error: " << error.code() << " " << error.message();
@@ -267,7 +274,9 @@ void ofApp::onException(const std::exception& notice)
 {
 	ofLogError("ofApp::onException") << "Exception: " << notice.what();
 }
+//COMPLETE
 
+//Mouse related functions
 void ofApp::mousePressed(int x, int y, int button)
 {
 	xMouseClick = x;
@@ -279,12 +288,94 @@ void ofApp::mouseMoved(int x, int y)
 	xMouse = x;
 	yMouse = y;
 }
+//COMPLETE
 
-Tweets::Tweets(double time, string tweet, bool startCountdown)
+Tweets::Tweets(double current_time, bool startCountdown, string tweet, Poco::DateTime &createdTime, string username, string displayName, string language, string url, int replies, int retweets, int likes, string place)
 {
-	this->startCountdown = startCountdown;
+	//Get username and nickname
+	this->username = username;
+	this->displayName = displayName;
+
+	//Handle text
 	this->text = tweet;
-	this->time = time;
+	for (int i = 0; i < 2; i++) //Check tweet type
+	{
+		if (text[i] == 'R' && text[i + 1] == 'T') //Check if is a retweet
+		{
+			type = "RT";
+			while (text[0] != ':') //Remove retweeted from text for more text information
+			{
+				text.erase(0, 1);
+			}
+			text.erase(0, 1);
+			break;
+		}
+		else if(text[i] == '@') //Check if is a mention
+		{
+			type = "MT";
+		}
+		else //If nothing above works it is a normal tweet
+		{
+			type = "TT";
+		}
+	}
+	bool biggerThanItShould = false; 
+	if (text.size() > 85) //If tweet is bigger than it should (85 characters) turn this bool true
+	{
+		biggerThanItShould = true;
+	}
+	this->text.resize(85); //Cut the tweet to 85 characters
+
+	size_t found;
+	found = text.find("\n"); //Find new lines on tweets
+	if (found != std::string::npos) //If found
+	{
+		while (text.size() != found)
+		{
+			text.erase(found, text.size() - found); //Erase everything below a new line and add warning
+		}
+		text.append("\n Click url to see more...");
+	}
+
+	if (text[text.size() - 2] != '.' && biggerThanItShould) //Check if has "Click url to see more", if not and text was bigger than it should, add it
+	{
+		text.append("...\n Click url to see more...");
+	}
+
+	//Get language
+	this->language = language;
+
+	//Get place
+	this->place = place;
+
+	//Get URL
+	this->url = url;
+
+	//Get replies
+	this->replies = replies;
+
+	//Get retweets
+	this->retweets = retweets;
+
+	//Get likes
+	this->likes = likes;
+
+	//Get date and time
+	this->date = to_string(createdTime.day());
+	this->date.append("/");
+	this->date.append(to_string(createdTime.month()));
+	this->date.append("/");
+	this->date.append(to_string(createdTime.year()));
+	this->date.append(" ");
+	this->date.append(to_string(createdTime.hour()));
+	this->date.append(":");
+	this->date.append(to_string(createdTime.minute()));
+	this->date.append(":");
+	this->date.append(to_string(createdTime.second()));
+
+	//Get time data
+	this->startCountdown = startCountdown;
+	this->time = current_time;
 }
 void Tweets::tweetTimer(double current_time)
 {

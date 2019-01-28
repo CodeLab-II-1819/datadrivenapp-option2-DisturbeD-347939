@@ -6,20 +6,31 @@
 class Tweets
 {
 public:
-	string text;
-	double interval = 5500;
+	string displayName; //Get nickname
+	string username; //Get account name
+	string text; //Get tweet text
+	string language;
+	string place;
+	string url;
+	string replies;
+	string retweets;
+	string likes;
+	string date; //Get date
+	string type;
+
+	double interval = 10000; //Duration before disappearing
 	double time;
 	bool selfDestruction = false;
 	bool startCountdown = false;
 	void tweetTimer(double time);
 
-	Tweets(double current_time, string tweet, bool startCountdown);
+	Tweets(double current_time, bool startCountdown, string tweet, Poco::DateTime &createdTime, string username, string displayName, string language, string url, int replies, int retweets, int likes, string place);
 };
 
 class ofApp: public ofBaseApp
 {
 public:
-    //declare app functions
+    //Declare app default functions
     void setup();
 	void update();
     void draw();
@@ -29,6 +40,29 @@ public:
 	void onMessage(const ofJson& json);
 	void mouseMoved(int x, int y);
 	void mousePressed(int x, int y, int button);
+
+	//Bools
+	bool updateTweets = false;
+	bool internetConnection;
+	bool reset = false;
+
+	//Integers
+	int queuedTweets;
+	int count = 0;
+
+	//Mouse
+	int xMouse;
+	int yMouse;
+	int xMouseClick = 0;
+	int yMouseClick = 0;
+    
+	//Declare twitter search client
+    ofxTwitter::SearchClient client;
+
+	//Tweet vector
+	vector<Tweets> myTweets;
+
+	/********************************************GUI******************************************/
 
 	//Functions
 	void drawMenu();
@@ -44,31 +78,12 @@ public:
 	ofImage language;
 	ofImage time;
 
-	int queuedTweets;
-	int count = 0;
-
-	//Mouse
-	int xMouse;
-	int yMouse;
-	int xMouseClick = 0;
-	int yMouseClick = 0;
-    
-	//declare twitter search client
-    ofxTwitter::SearchClient client;
-    
-    //declare variables
-	bool internetConnection;
-	bool reset = false;
-
 	//Colour defaults
 	ofColor colourText;
 	ofColor colourBackground = (255, 255, 255);
 
 	//For fonts and sizes
 	ofTrueTypeFont font;
-
-	//Tweet vector
-	vector<Tweets> myTweets;
 
 	//Enumerators
 	enum tabs {
