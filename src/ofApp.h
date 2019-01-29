@@ -18,11 +18,14 @@ public:
 	void mouseMoved(int x, int y);
 	void mousePressed(int x, int y, int button);
 	void mouseDragged(int x, int y, int button);
+	void keyPressed(int key);
 
 	//Bools
 	bool updateTweets = false;
 	bool internetConnection;
 	bool reset = false;
+	bool changeTextBoxColour = false;
+	bool userCanType = false;
 
 	//Integers
 	int queuedTweets;
@@ -44,12 +47,14 @@ public:
 
 	//Tweet vectors
 	vector<Tweets> myTweets;
-	vector<Tweets> mySearchTweets;
 	vector<string> myTweetWords;
 
 	//Timers
 	double updateTweetWordSearch = 0;
 	int updateTweetWordSearchCount = 0;
+
+	//Strings
+	string userInput = "";
 
 	/********************************************GUI******************************************/
 
@@ -66,6 +71,7 @@ public:
 	ofImage coordinates;
 	ofImage language;
 	ofImage time;
+	ofImage search;
 
 	//Colour defaults
 	ofColor colourText;
@@ -77,6 +83,8 @@ public:
 	//Sliders
 	ofRectangle timerSlider;
 	ofRectangle timerBar;
+	ofRectangle searchBar;
+	ofRectangle searchButton;
 
 	//Enumerators
 	enum tabs {

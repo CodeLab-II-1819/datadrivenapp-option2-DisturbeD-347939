@@ -19,13 +19,13 @@ void ofApp::setup()
 	//Default sliders
 	timerBar.set(500, 920, 450, 10);
 	timerSlider.set(700, 900, 50, 50);
+	searchBar.set(50, 210, 400, 50);
+	searchButton.set(450, 210, 50, 50);
 
 	//Twitter settings
 	client.registerSearchEvents(this);
 	client.setCredentialsFromFile("credentials.json");
 	client.setPollingInterval(6000);
-	//ofxTwitter::SearchQuery query("ihlfsaldfijdsalfjlesakfnesahdfgh");
-	//client.search(query);
 
 	//Check internet connection
 	if (internetConnection == NULL) 
@@ -43,6 +43,7 @@ void ofApp::setup()
 	hyperlink.load("images/hyperlink.png");
 	reply.load("images/reply.png");
 	time.load("images/time.png");
+	search.load("images/magnifying glass.png");
 
 	//Input words into tweet word vector
 	myTweetWords.push_back("hello");
@@ -51,26 +52,25 @@ void ofApp::setup()
 
 void ofApp::update()
 {
-	if (ofGetElapsedTimeMillis() >= updateTweetWordSearch)
-	{
-		updateTweetWordSearch += 6000;
-		client.search(myTweetWords[updateTweetWordSearchCount]);
-		cout << myTweetWords[updateTweetWordSearchCount] << endl;
-		if (updateTweetWordSearchCount < myTweetWords.size() - 1)
-		{
-			updateTweetWordSearchCount++;
-		}
-		else
-		{
-			updateTweetWordSearchCount = 0;
-		}
-	}
-
 	currentTab == HOME ? updateTweets = true : updateTweets = false;
 
 	//Update twitter times
 	if (updateTweets)
 	{
+		cout << "Size - " << myTweets.size() << endl;
+		if (ofGetElapsedTimeMillis() >= updateTweetWordSearch)
+		{
+			updateTweetWordSearch += 6000;
+			client.search(myTweetWords[updateTweetWordSearchCount]);
+			if (updateTweetWordSearchCount < myTweetWords.size() - 1)
+			{
+				updateTweetWordSearchCount++;
+			}
+			else
+			{
+				updateTweetWordSearchCount = 0;
+			}
+		}
 		for (int i = 0; i < myTweets.size() && i < 10; i++)
 		{
 			myTweets[i].tweetTimer(ofGetElapsedTimeMillis());
@@ -117,8 +117,8 @@ void ofApp::draw()
 		
 		switch (currentTab)
 		{
-			case HOME:
-				{
+		case HOME: //Home tab
+		{
 
 					//Draw text feed
 					ofNoFill();
@@ -214,7 +214,7 @@ void ofApp::draw()
 							cout << "Opened tweet number " << i << endl;
 							xMouseClick = 0;
 							yMouseClick = 0;
-							ofLaunchBrowser(myTweets[i].url);
+							ofLaunchBrowser(myTweets[i].url); //Open tweet URL
 						}
 					}
 
@@ -245,8 +245,8 @@ void ofApp::draw()
 							font.drawString(" tweets queued!", 112 + 50, 865);
 						}
 					}
+
 					//Add timer slider
-					
 					ofNoFill();
 					ofDrawRectangle(timerBar);
 					font.drawString(to_string(int(tweetIntervalMS)), timerSlider.x, timerSlider.y - 15);
@@ -264,30 +264,137 @@ void ofApp::draw()
 					
 					break;
 				}
-		case SEARCH:
+		case SEARCH: //Search tab
 		{
+			
+			//Draw search box
+			if (!changeTextBoxColour)
+			{
+				ofNoFill();
+				ofDrawRectangle(searchBar); //Search box
+				ofDrawRectangle(searchButton); //Search button
+				search.draw(450, 220, 50, 30);
+			}
+			else
+			{
+				ofFill();
+				ofDrawRectangle(searchBar); //Search box
+				ofDrawRectangle(searchButton); //Search button
+				ofSetColor(colourBackground);
+				font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 15);
+				font.drawString(userInput, 60, 240);
+				search.draw(450, 220, 50, 30);
+			}
+
 			//Draw text feed
 			ofNoFill();
-			ofDrawRectangle(100, 200, 1300, 650); //Feed box
-			ofDrawRectangle(100, 160, 150, 40); //Username box
-			ofDrawRectangle(250, 160, 750, 40); //Text box
-			ofDrawRectangle(1000, 160, 50, 40); //Language box
-			ofDrawRectangle(1050, 160, 100, 40); //Place box
-			ofDrawRectangle(1150, 160, 50, 40); //Url box
-			ofDrawRectangle(1200, 160, 50, 40); //Reply box
-			ofDrawRectangle(1250, 160, 50, 40); //Retweet box
-			ofDrawRectangle(1300, 160, 50, 40); //Favorite box
-			ofDrawRectangle(1350, 160, 50, 40); //Timestamp box
+			ofSetColor(colourText);
+			ofDrawRectangle(50, 300, 1300, 650); //Feed box
+			ofDrawRectangle(50, 260, 150, 40); //Username box
+			ofDrawRectangle(200, 260, 750, 40); //Text box
+			ofDrawRectangle(950, 260, 50, 40); //Language box
+			ofDrawRectangle(1000, 260, 100, 40); //Place box
+			ofDrawRectangle(1100, 260, 50, 40); //Url box
+			ofDrawRectangle(1150, 260, 50, 40); //Reply box
+			ofDrawRectangle(1200, 260, 50, 40); //Retweet box
+			ofDrawRectangle(1250, 260, 50, 40); //Favorite box
+			ofDrawRectangle(1300, 260, 50, 40); //Timestamp box
 			font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 20);
-			font.drawString("Username", 120, 190);
-			font.drawString("Tweet", 605, 190);
-			language.draw(1010, 170, 30, 20);
-			coordinates.draw(1083, 165, 30, 30);
-			url.draw(1155, 165, 40, 30);
-			reply.draw(1210, 170, 30, 20);
-			retweet.draw(1260, 160, 30, 40);
-			favourite.draw(1300, 160, 50, 40);
-			time.draw(1350, 160, 50, 40);
+			font.drawString("Username", 70, 290);
+			font.drawString("Tweet", 555, 290);
+			language.draw(960, 270, 30, 20);
+			coordinates.draw(1033, 265, 30, 30);
+			url.draw(1105, 265, 40, 30);
+			reply.draw(1160, 270, 30, 20);
+			retweet.draw(1210, 260, 30, 40);
+			favourite.draw(1250, 260, 50, 40);
+			time.draw(1300, 260, 50, 40);
+
+			//Display tweets
+			font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
+			for (int i = 0; i < 10; i++)
+			{
+				if (i < myTweets.size())
+				{
+					ofSetColor(colourText);
+					font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
+
+					//Draw tweet user
+					font.drawString(myTweets[i].displayName, 60, 327 + (65 * i));
+					font.drawString(myTweets[i].username, 60, 347 + (65 * i));
+					ofDrawRectangle(50, 300 + (65 * i), 150, 65);
+
+					//Draw tweet text
+					//if(i % 0 == 0)
+					font.drawString(myTweets[i].text, 210, 327 + (65 * i));
+					ofDrawRectangle(200, 300 + (65 * i), 750, 65);
+
+					//Draw tweet type
+					font.drawString(myTweets[i].type, 910, 335 + (65 * i));
+
+					//Draw tweet language
+					font.drawString(myTweets[i].language, 965, 340 + (65 * i));
+					ofDrawRectangle(950, 300 + (65 * i), 50, 65);
+
+					//Draw tweet location
+					font.drawString(myTweets[i].place, 1010, 340 + (65 * i));
+					ofDrawRectangle(1000, 300 + (65 * i), 100, 65);
+
+					//Draw url icon
+					hyperlink.draw(1110, 318 + (65 * i), 30, 30);
+					ofDrawRectangle(1100, 300 + (65 * i), 50, 65);
+					myURLS[i].setX(1100);
+					myURLS[i].setY(300 + (65 * i));
+					myURLS[i].setWidth(50);
+					myURLS[i].setHeight(65);
+
+					//Draw tweet replies
+					font.drawString(myTweets[i].replies, 1160, 340 + (65 * i));
+					ofDrawRectangle(1150, 300 + (65 * i), 50, 65);
+
+					//Draw tweet retweets
+					font.drawString(myTweets[i].retweets, 1210, 340 + (65 * i));
+					ofDrawRectangle(1200, 300 + (65 * i), 50, 65);
+
+					//Draw tweet likes
+					font.drawString(myTweets[i].likes, 1260, 340 + (65 * i));
+					ofDrawRectangle(1250, 300 + (65 * i), 50, 65);
+
+					//Draw tweet time
+					font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 10);
+					font.drawString(myTweets[i].hour, 1310, 320 + (65 * i));
+					font.drawString("h", 1330, 320 + (65 * i));
+					font.drawString(myTweets[i].minute, 1310, 332 + (65 * i));
+					font.drawString("m", 1330, 332 + (65 * i));
+					font.drawString(myTweets[i].second, 1310, 344 + (65 * i));
+					font.drawString("s", 1330, 344 + (65 * i));
+					ofDrawRectangle(1300, 300 + (65 * i), 50, 65);
+				}
+			}
+
+			//Handle search input
+			if (searchBar.inside(xMouseClick, yMouseClick))
+			{
+				changeTextBoxColour = true;
+				userCanType = true;
+			}
+			else if (searchButton.inside(xMouseClick, yMouseClick))
+			{
+				changeTextBoxColour = false;
+				userCanType = false;
+				if (userInput != "")
+				{
+					count = 0;
+					cout << "UserInput - > " << userInput << endl;
+					myTweets.clear();
+					ofxTwitter::SearchQuery query(userInput);
+					client.rateLimit = 5;
+					cout << "Rate - " << client.rateLimit << endl;
+					client.search(query);
+					userInput = "";
+				}
+			}
+
 			break;
 		}
 		case SETTINGS:
@@ -309,7 +416,10 @@ void ofApp::draw()
 //This function is called everytime a new tweet is received
 void ofApp::onStatus(const ofxTwitter::Status& status)
 {
+	cout << "yooooo" << endl;
 	count++;
+	cout << count << endl;
+	
 	string placeName = "N/A";
 	string countryCode = "";
 	if (status.place() != 0) //Check if there is any location available before passing parameters
@@ -327,7 +437,6 @@ void ofApp::onStatus(const ofxTwitter::Status& status)
 			placeName.append("," + countryCode);
 		}
 	}
-
 	myTweets.size() >= 10 ? myTweets.push_back(Tweets(tweetIntervalMS, ofGetElapsedTimeMillis(), false, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName)) : myTweets.push_back(Tweets(tweetIntervalMS, ofGetElapsedTimeMillis(), true, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName));
 
 }
@@ -350,6 +459,10 @@ void ofApp::drawMenu()
 		ofSetColor(colourBackground);
 		font.drawString("Home", 20, 50);
 		ofSetColor(colourText);
+		cout << "Polling count - " << client.pollingCount() << endl;
+		client.reset();
+		client.stop();
+		cout << "Is running - " << client.isRunning() << endl;
 	}
 	else
 	{
@@ -417,17 +530,17 @@ void ofApp::drawMenu()
 	//Check if mouse pressed inside one of the tabs
 	if (Home.inside(xMouseClick, yMouseClick))
 	{
-		client.search("hello"); //mine
 		currentTab = HOME;
+		myTweets.clear();
+		client.search("");
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
 	else if (Search.inside(xMouseClick, yMouseClick))
 	{
-		cout << "that" << endl;
-		ofxTwitter::SearchQuery query("ahadfhdfshdsgfhsfdhsdfhsdfh");
-		client.search(query);
 		currentTab = SEARCH;
+		myTweets.clear();
+		client.search("");
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
@@ -449,15 +562,16 @@ void ofApp::drawMenu()
 //Handle errors and exceptions
 void ofApp::onError(const ofxTwitter::Error& error)
 {
-	ofLogError("ofApp::onError") << "Error: " << error.code() << " " << error.message();
+	cout << "onError" << endl;
 }
 void ofApp::onMessage(const ofJson& json)
 {
 	// This is the raw message json and is ignored here.
+	cout << "onMessage" << endl;
 }
 void ofApp::onException(const std::exception& notice)
 {
-	ofLogError("ofApp::onException") << "Exception: " << notice.what();
+	cout << "Exception" << endl;
 }
 //COMPLETE
 
@@ -480,3 +594,23 @@ void ofApp::mouseMoved(int x, int y)
 	yMouse = y;
 }
 //COMPLETE
+
+//Key handling
+void ofApp::keyPressed(int key)
+{
+	if (userCanType)
+	{
+		char convertedKey = key;
+		if (key == 8)
+		{
+			if (userInput.size() != 0)
+			{
+				userInput.erase(userInput.size() - 1, 1);
+			}
+		}
+		else
+		{
+			userInput += convertedKey;
+		}
+	}
+}
