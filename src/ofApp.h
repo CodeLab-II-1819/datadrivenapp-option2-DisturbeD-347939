@@ -7,24 +7,36 @@
 class Tweets
 {
 public:
+	//Information variables
 	string displayName; //Get nickname
 	string username; //Get account name
 	string text; //Get tweet text
-	string language;
-	string place;
-	string url;
-	string replies;
-	string retweets;
-	string likes;
+	string language; //Get language
+	string place; //Get place
+	string url; //Get url
+	string replies; //Get replies
+	string retweets; //Get retweets
+	string likes; //Get likes
 	string date; //Get date
-	string type;
+	string day;
+	string month;
+	string year;
+	string hour;
+	string minute;
+	string second;
+	string type; //Get tweet type
 
+	//Functions
+	string shortNumber(int number);
+	void tweetTimer(double time);
+
+	//Time variables
 	double interval = 10000; //Duration before disappearing
 	double time;
 	bool selfDestruction = false;
 	bool startCountdown = false;
-	void tweetTimer(double time);
 
+	//Constructor
 	Tweets(double current_time, bool startCountdown, string tweet, Poco::DateTime &createdTime, string username, string displayName, string language, string url, int replies, int retweets, int likes, string place);
 };
 

@@ -5,23 +5,23 @@
 
 void ofApp::setup()
 {
-	//Initial settings
-	ofSetBackgroundColor(colourBackground);
-	ofSetFrameRate(60);
-
 	//Default colours
 	colourText.r = 29;
 	colourText.g = 161;
 	colourText.b = 242;
-	colourBackground.r = 255;
-	colourBackground.g = 255;
-	colourBackground.b = 255;
+	colourBackground.r = 250;
+	colourBackground.g = 250;
+	colourBackground.b = 250;
+
+	//Initial settings
+	ofSetBackgroundColor(colourBackground);
+	ofSetFrameRate(60);
 
 	//Twitter settings
 	client.registerSearchEvents(this);
 	client.setCredentialsFromFile("credentials.json");
 	client.setPollingInterval(6000);
-	client.search("location");
+	client.search("trump");
 	
 
 	//Check internet connection
@@ -58,7 +58,7 @@ void ofApp::update()
 				i--;
 			}
 		}
-		queuedTweets = myTweets.size() - 15;
+		queuedTweets = myTweets.size() - 10;
 	}
 }
 
@@ -114,6 +114,7 @@ void ofApp::draw()
 				if (i < myTweets.size())
 				{
 					ofSetColor(colourText);
+					font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
 
 					//Draw tweet user
 					font.drawString(myTweets[i].displayName, 110, 227 + (65 * i));
@@ -121,6 +122,7 @@ void ofApp::draw()
 					ofDrawRectangle(100, 200 + (65 * i), 150, 65);
 
 					//Draw tweet text
+					//if(i % 0 == 0)
 					font.drawString(myTweets[i].text, 260, 227 + (65 * i));
 					ofDrawRectangle(250, 200 + (65 * i), 750, 65);
 
@@ -131,7 +133,7 @@ void ofApp::draw()
 					font.drawString(myTweets[i].language, 1015, 240 + (65 * i));
 					ofDrawRectangle(1000, 200 + (65 * i), 50, 65);
 
-					//Draw tweet language
+					//Draw tweet location
 					font.drawString(myTweets[i].place, 1060, 240 + (65 * i));
 					ofDrawRectangle(1050, 200 + (65 * i), 100, 65);
 
@@ -142,6 +144,28 @@ void ofApp::draw()
 					myURLS[i].setY(200 + (65 * i));
 					myURLS[i].setWidth(50);
 					myURLS[i].setHeight(65);
+
+					//Draw tweet replies
+					font.drawString(myTweets[i].replies, 1210, 240 + (65 * i));
+					ofDrawRectangle(1200, 200 + (65 * i), 50, 65);
+
+					//Draw tweet retweets
+					font.drawString(myTweets[i].retweets, 1260, 240 + (65 * i));
+					ofDrawRectangle(1250, 200 + (65 * i), 50, 65);
+
+					//Draw tweet likes
+					font.drawString(myTweets[i].likes, 1310, 240 + (65 * i));
+					ofDrawRectangle(1300, 200 + (65 * i), 50, 65);
+
+					//Draw tweet time
+					font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 10);
+					font.drawString(myTweets[i].hour, 1360, 220 + (65 * i));
+					font.drawString("h", 1380, 220 + (65 * i));
+					font.drawString(myTweets[i].minute, 1360, 230 + (65 * i));
+					font.drawString("m", 1380, 230 + (65 * i));
+					font.drawString(myTweets[i].second, 1360, 240 + (65 * i));
+					font.drawString("s", 1380, 240 + (65 * i));
+					ofDrawRectangle(1350, 200 + (65 * i), 50, 65);
 				}
 			}
 			
@@ -149,12 +173,38 @@ void ofApp::draw()
 			{
 				if (myURLS[i].inside(xMouseClick, yMouseClick))
 				{
-					cout << "inside" << endl;
+					cout << "Opened tweet number " << i << endl;
 					xMouseClick = 0;
 					yMouseClick = 0;
-					
+					ofLaunchBrowser(myTweets[i].url);
+				}
+			}
 
-					system("start");
+			//Print queued tweets
+			if (queuedTweets > 0)
+			{
+				font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 10);
+				font.drawString("+", 105, 865);
+				font.drawString(to_string(queuedTweets), 112, 865);
+				if (queuedTweets <= 9)
+				{
+					font.drawString(" tweets queued!", 112 + 10, 865);
+				}
+				else if (queuedTweets >= 10 && queuedTweets <= 99)
+				{
+					font.drawString(" tweets queued!", 112 + 20, 865);
+				}
+				else if (queuedTweets >= 100 && queuedTweets <= 999)
+				{
+					font.drawString(" tweets queued!", 112 + 30, 865);
+				}
+				else if (queuedTweets >= 1000 && queuedTweets <= 9999)
+				{
+					font.drawString(" tweets queued!", 112 + 40, 865);
+				}
+				else
+				{
+					font.drawString(" tweets queued!", 112 + 50, 865);
 				}
 			}
 
@@ -177,7 +227,6 @@ void ofApp::draw()
 void ofApp::onStatus(const ofxTwitter::Status& status)
 {
 	count++;
-
 	string placeName = "N/A";
 	string countryCode = "";
 	if (status.place() != 0) //Check if there is any location available before passing parameters
@@ -194,7 +243,6 @@ void ofApp::onStatus(const ofxTwitter::Status& status)
 		{
 			placeName.append("," + countryCode);
 		}
-		cout << placeName << endl;
 	}
 
 	myTweets.size() >= 10 ? myTweets.push_back(Tweets(ofGetElapsedTimeMillis(), false, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName)) : myTweets.push_back(Tweets(ofGetElapsedTimeMillis(), true, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName));
@@ -354,10 +402,9 @@ Tweets::Tweets(double current_time, bool startCountdown, string tweet, Poco::Dat
 
 	//Handle text
 	this->text = tweet;
-	cout << text[0] << endl;
 	if (text[0] == 'R' && text[1] == 'T') //Check if is a retweet
 	{
-		type = "RT";
+		type = "RT"; //Retweet
 		while (text[0] != ':') //Remove retweeted from text for more text information
 		{
 			text.erase(0, 1);
@@ -366,11 +413,11 @@ Tweets::Tweets(double current_time, bool startCountdown, string tweet, Poco::Dat
 	}
 	else if(text[0] == '\x40') //Check if is a mention
 	{
-		type = "MT";
+		type = "MT"; //Mention
 	}
 	else //If nothing above works it is a normal tweet
 	{
-		type = "TT";
+		type = "TT"; //Tweet
 	}
 	
 	bool biggerThanItShould = false; 
@@ -412,13 +459,13 @@ Tweets::Tweets(double current_time, bool startCountdown, string tweet, Poco::Dat
 	this->url = url;
 
 	//Get replies
-	this->replies = replies;
+	this->replies = shortNumber(replies);
 
 	//Get retweets
-	this->retweets = retweets;
+	this->retweets = shortNumber(retweets);
 
 	//Get likes
-	this->likes = likes;
+	this->likes = shortNumber(likes);
 
 	//Get date and time
 	this->date = to_string(createdTime.day());
@@ -432,6 +479,12 @@ Tweets::Tweets(double current_time, bool startCountdown, string tweet, Poco::Dat
 	this->date.append(to_string(createdTime.minute()));
 	this->date.append(":");
 	this->date.append(to_string(createdTime.second()));
+	this->day = to_string(createdTime.day());
+	this->month = to_string(createdTime.month());
+	this->year = to_string(createdTime.year());
+	this->hour = to_string(createdTime.hour());
+	this->minute = to_string(createdTime.minute());
+	this->second = to_string(createdTime.second());
 
 	//Get time data
 	this->startCountdown = startCountdown;
@@ -451,4 +504,85 @@ void Tweets::tweetTimer(double current_time)
 		time = current_time;
 		startCountdown = true;
 	}
+}
+
+string Tweets::shortNumber(int number)
+{
+	char numberSize = 'o';
+	if (number <= 0)
+	{
+		number = 0;
+	}
+	else if (number >= 10000000) //Larger than 10M
+	{
+		number /= 1000000;
+		numberSize = 'M';
+	}
+	else if (number >= 1000000) //Largen than 1M
+	{
+		number /= 1000000;
+		numberSize = 'M';
+	}
+	else if (number >= 100000) //Larger than 100mil
+	{
+		number /= 1000;
+		numberSize = 'k';
+	}
+	else if (number >= 10000) //Larger than 10mil
+	{
+		number /= 1000;
+		numberSize = 'k';
+	}
+	else if (number >= 1000) //Larger than 1k
+	{
+		number /= 1000;
+		numberSize = 'k';
+	}
+
+	string finalizedNumber;
+	finalizedNumber.append(to_string(number));
+	//while (finalizedNumber[finalizedNumber.size() - 1] == '0')
+	//{
+	//	finalizedNumber.erase(finalizedNumber.size() - 1, 1);
+	//}
+	//if (finalizedNumber[finalizedNumber.size() - 1] == '.')
+	//{
+	//	finalizedNumber.erase(finalizedNumber.size() - 1, 1);
+	//}
+	//else
+	//{
+	//	if (numberSize == 'M' || numberSize == 'm' || numberSize == 'k')
+	//	{
+	//		while(finalizedNumber[finalizedNumber.size() - 1] != '.')
+	//		{
+	//			finalizedNumber.erase(finalizedNumber.size() - 1, 1);
+	//		}
+	//	}
+	//	size_t foundDecimal;
+	//	foundDecimal = finalizedNumber.find("."); //Find new lines on tweets
+	//	if (foundDecimal != std::string::npos) //If found
+	//	{
+	//		int howManyDecimals;
+	//		cout << finalizedNumber;
+	//		howManyDecimals = finalizedNumber.size() - foundDecimal;
+	//		finalizedNumber.erase(finalizedNumber.size() - 1, howManyDecimals);
+	//		cout << " " << finalizedNumber << endl << endl;
+	//			
+	//	}
+	//}
+	switch (numberSize)
+	{
+	case 'M':
+		finalizedNumber += numberSize;
+		break;
+	case 'm':
+		finalizedNumber += numberSize;
+		break;
+	case 'k':
+		finalizedNumber += numberSize;
+		break;
+	default:
+		break;
+	}
+	return finalizedNumber;
 }
