@@ -2,43 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxTwitter.h"
-
-
-class Tweets
-{
-public:
-	//Information variables
-	string displayName; //Get nickname
-	string username; //Get account name
-	string text; //Get tweet text
-	string language; //Get language
-	string place; //Get place
-	string url; //Get url
-	string replies; //Get replies
-	string retweets; //Get retweets
-	string likes; //Get likes
-	string date; //Get date
-	string day;
-	string month;
-	string year;
-	string hour;
-	string minute;
-	string second;
-	string type; //Get tweet type
-
-	//Functions
-	string shortNumber(int number);
-	void tweetTimer(double time);
-
-	//Time variables
-	double interval = 10000; //Duration before disappearing
-	double time;
-	bool selfDestruction = false;
-	bool startCountdown = false;
-
-	//Constructor
-	Tweets(double current_time, bool startCountdown, string tweet, Poco::DateTime &createdTime, string username, string displayName, string language, string url, int replies, int retweets, int likes, string place);
-};
+#include "Tweets.h"
 
 class ofApp: public ofBaseApp
 {
@@ -53,6 +17,7 @@ public:
 	void onMessage(const ofJson& json);
 	void mouseMoved(int x, int y);
 	void mousePressed(int x, int y, int button);
+	void mouseDragged(int x, int y, int button);
 
 	//Bools
 	bool updateTweets = false;
@@ -63,17 +28,28 @@ public:
 	int queuedTweets;
 	int count = 0;
 
+	//Doubles
+	double tweetIntervalMS = 10000;
+
 	//Mouse
 	int xMouse;
 	int yMouse;
 	int xMouseClick = 0;
 	int yMouseClick = 0;
+	int xMouseDrag = 0;
+	int yMouseDrag = 0;
     
 	//Declare twitter search client
     ofxTwitter::SearchClient client;
 
-	//Tweet vector
+	//Tweet vectors
 	vector<Tweets> myTweets;
+	vector<Tweets> mySearchTweets;
+	vector<string> myTweetWords;
+
+	//Timers
+	double updateTweetWordSearch = 0;
+	int updateTweetWordSearchCount = 0;
 
 	/********************************************GUI******************************************/
 
@@ -97,6 +73,10 @@ public:
 
 	//For fonts and sizes
 	ofTrueTypeFont font;
+
+	//Sliders
+	ofRectangle timerSlider;
+	ofRectangle timerBar;
 
 	//Enumerators
 	enum tabs {
