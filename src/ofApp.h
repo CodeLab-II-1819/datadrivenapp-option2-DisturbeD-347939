@@ -26,13 +26,16 @@ public:
 	bool reset = false;
 	bool changeTextBoxColour = false;
 	bool userCanType = false;
+	bool resetSearch = false;
+	bool stop = false;
+	bool isShiftEnabled = false;
 
 	//Integers
 	int queuedTweets;
 	int count = 0;
 
 	//Doubles
-	double tweetIntervalMS = 10000;
+	double tweetIntervalMS;
 
 	//Mouse
 	int xMouse;
@@ -55,6 +58,9 @@ public:
 
 	//Strings
 	string userInput = "";
+
+	//Functions
+	void searchTweet(bool archive, string text);
 
 	/********************************************GUI******************************************/
 

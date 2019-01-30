@@ -46,8 +46,8 @@ void ofApp::setup()
 	search.load("images/magnifying glass.png");
 
 	//Input words into tweet word vector
-	myTweetWords.push_back("hello");
-	myTweetWords.push_back("goodbye");
+	myTweetWords.push_back("die");
+	myTweetWords.push_back("live");
 }
 
 void ofApp::update()
@@ -57,11 +57,19 @@ void ofApp::update()
 	//Update twitter times
 	if (updateTweets)
 	{
-		cout << "Size - " << myTweets.size() << endl;
 		if (ofGetElapsedTimeMillis() >= updateTweetWordSearch)
 		{
 			updateTweetWordSearch += 6000;
-			client.search(myTweetWords[updateTweetWordSearchCount]);
+			if (client.isRunning() == 0)
+			{
+				searchTweet(false, myTweetWords[updateTweetWordSearchCount]);
+			}
+			else
+			{
+				resetSearch = true;
+				client.stop();
+			}
+			
 			if (updateTweetWordSearchCount < myTweetWords.size() - 1)
 			{
 				updateTweetWordSearchCount++;
@@ -80,8 +88,8 @@ void ofApp::update()
 				i--;
 			}
 		}
-		queuedTweets = myTweets.size() - 10; //Update the number of queued tweets
 	}
+	queuedTweets = myTweets.size() - 10; //Update the number of queued tweets
 
 	float oldTweetIntervalMS = tweetIntervalMS; //Check if position changed
 	tweetIntervalMS = 1000 + (42 * ((timerSlider.x + 25) - 500)); //Convert slider position into seconds.
@@ -93,9 +101,6 @@ void ofApp::update()
 			myTweets[i].interval = tweetIntervalMS;
 		}
 	}
-
-
-
 }
 
 void ofApp::draw()
@@ -149,6 +154,7 @@ void ofApp::draw()
 					font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
 					for (int i = 0; i < 10; i++)
 					{
+
 						if (i < myTweets.size())
 						{
 							ofSetColor(colourText);
@@ -205,13 +211,9 @@ void ofApp::draw()
 							font.drawString("s", 1380, 244 + (65 * i));
 							ofDrawRectangle(1350, 200 + (65 * i), 50, 65);
 						}
-					}
-					
-					for (int i = 0; i < 10; i++)
-					{
+
 						if (myURLS[i].inside(xMouseClick, yMouseClick))
 						{
-							cout << "Opened tweet number " << i << endl;
 							xMouseClick = 0;
 							yMouseClick = 0;
 							ofLaunchBrowser(myTweets[i].url); //Open tweet URL
@@ -369,31 +371,45 @@ void ofApp::draw()
 					font.drawString(myTweets[i].second, 1310, 344 + (65 * i));
 					font.drawString("s", 1330, 344 + (65 * i));
 					ofDrawRectangle(1300, 300 + (65 * i), 50, 65);
+
+					//Print queued tweets
+					if (queuedTweets > 0)
+					{
+						font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 10);
+						font.drawString("+", 55, 965);
+						font.drawString(to_string(queuedTweets), 62, 965);
+						if (queuedTweets <= 9)
+						{
+							font.drawString(" tweets queued!", 62 + 10, 965);
+						}
+						else if (queuedTweets >= 10 && queuedTweets <= 99)
+						{
+							font.drawString(" tweets queued!", 62 + 20, 965);
+						}
+						else if (queuedTweets >= 100 && queuedTweets <= 999)
+						{
+							font.drawString(" tweets queued!", 62 + 30, 965);
+						}
+						else if (queuedTweets >= 1000 && queuedTweets <= 9999)
+						{
+							font.drawString(" tweets queued!", 62 + 40, 965);
+						}
+						else
+						{
+							font.drawString(" tweets queued!", 62 + 50, 965);
+						}
+					}
+
+					if (myURLS[i].inside(xMouseClick, yMouseClick))
+					{
+						xMouseClick = 0;
+						yMouseClick = 0;
+						ofLaunchBrowser(myTweets[i].url); //Open tweet URL
+					}
+
 				}
 			}
 
-			//Handle search input
-			if (searchBar.inside(xMouseClick, yMouseClick))
-			{
-				changeTextBoxColour = true;
-				userCanType = true;
-			}
-			else if (searchButton.inside(xMouseClick, yMouseClick))
-			{
-				changeTextBoxColour = false;
-				userCanType = false;
-				if (userInput != "")
-				{
-					count = 0;
-					cout << "UserInput - > " << userInput << endl;
-					myTweets.clear();
-					ofxTwitter::SearchQuery query(userInput);
-					client.rateLimit = 5;
-					cout << "Rate - " << client.rateLimit << endl;
-					client.search(query);
-					userInput = "";
-				}
-			}
 
 			break;
 		}
@@ -416,10 +432,18 @@ void ofApp::draw()
 //This function is called everytime a new tweet is received
 void ofApp::onStatus(const ofxTwitter::Status& status)
 {
-	cout << "yooooo" << endl;
-	count++;
-	cout << count << endl;
-	
+	if (stop)
+	{
+		client.reset();
+		stop = false;
+	}
+
+	if (resetSearch)
+	{
+		client.stop();
+		resetSearch = false;
+	}
+
 	string placeName = "N/A";
 	string countryCode = "";
 	if (status.place() != 0) //Check if there is any location available before passing parameters
@@ -438,7 +462,6 @@ void ofApp::onStatus(const ofxTwitter::Status& status)
 		}
 	}
 	myTweets.size() >= 10 ? myTweets.push_back(Tweets(tweetIntervalMS, ofGetElapsedTimeMillis(), false, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName)) : myTweets.push_back(Tweets(tweetIntervalMS, ofGetElapsedTimeMillis(), true, status.text(), status.createdAt(), status.user()->screenName(), status.user()->name(), status.language(), status.url(), status.replyCount(), status.retweetCount(), status.favoriteCount(), placeName));
-
 }
 
 //Draw navigation bar
@@ -459,10 +482,6 @@ void ofApp::drawMenu()
 		ofSetColor(colourBackground);
 		font.drawString("Home", 20, 50);
 		ofSetColor(colourText);
-		cout << "Polling count - " << client.pollingCount() << endl;
-		client.reset();
-		client.stop();
-		cout << "Is running - " << client.isRunning() << endl;
 	}
 	else
 	{
@@ -533,6 +552,8 @@ void ofApp::drawMenu()
 		currentTab = HOME;
 		myTweets.clear();
 		client.search("");
+		resetSearch = true;
+		stop = true;
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
@@ -540,7 +561,7 @@ void ofApp::drawMenu()
 	{
 		currentTab = SEARCH;
 		myTweets.clear();
-		client.search("");
+		queuedTweets = 0;
 		xMouseClick = 0;
 		yMouseClick = 0;
 	}
@@ -559,19 +580,39 @@ void ofApp::drawMenu()
 }
 //COMPLETE
 
+void ofApp::searchTweet(bool archive, string text, string city)
+{
+	if (archive)
+	{
+		ofxTwitter::SearchQuery query(text);
+		//query.setUntil(2019, 1, 29);
+		if()
+		query.setGeoCode(51.3811, -2.3590, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+		query.setCount(10);
+		client.search(query);
+		resetSearch = true;
+	}
+	else
+	{
+		client.search(text);
+		resetSearch = true;
+		
+	}
+}
+
 //Handle errors and exceptions
 void ofApp::onError(const ofxTwitter::Error& error)
 {
-	cout << "onError" << endl;
+	//cout << "onError" << endl;
 }
 void ofApp::onMessage(const ofJson& json)
 {
 	// This is the raw message json and is ignored here.
-	cout << "onMessage" << endl;
+	//cout << "onMessage" << endl;
 }
 void ofApp::onException(const std::exception& notice)
 {
-	cout << "Exception" << endl;
+	//cout << "Exception" << endl;
 }
 //COMPLETE
 
@@ -587,6 +628,25 @@ void ofApp::mousePressed(int x, int y, int button)
 	xMouseClick = x;
 	yMouseClick = y;
 	cout << xMouseClick << " " << yMouseClick << endl;
+
+	//Handle search input
+	if (searchBar.inside(xMouseClick, yMouseClick))
+	{
+		changeTextBoxColour = true;
+		userCanType = true;
+	}
+	else if (searchButton.inside(xMouseClick, yMouseClick))
+	{
+		changeTextBoxColour = false;
+		userCanType = false;
+		if (userInput != "")
+		{
+			count = 0;
+			searchTweet(true, userInput);
+			myTweets.clear();
+			userInput = "";
+		}
+	}
 }
 void ofApp::mouseMoved(int x, int y)
 {
@@ -600,17 +660,32 @@ void ofApp::keyPressed(int key)
 {
 	if (userCanType)
 	{
-		char convertedKey = key;
-		if (key == 8)
+		cout << key << endl;
+		if(GetKeyState(VK_SHIFT) == 1 || GetKeyState(VK_SHIFT) == 0)
 		{
-			if (userInput.size() != 0)
+			char convertedKey = key;
+			if (key == 8)
 			{
-				userInput.erase(userInput.size() - 1, 1);
+				if (userInput.size() != 0)
+				{
+					userInput.erase(userInput.size() - 1, 1);
+				}
+			}
+			else
+			{
+				userInput += convertedKey;
 			}
 		}
 		else
 		{
-			userInput += convertedKey;
+			if (key == 34 || key == 64)
+			{
+				userInput += "\x40";
+			}
+			if (key == 35 || key == 26)
+			{
+				userInput += "\x23";
+			}
 		}
 	}
 }
