@@ -1,6 +1,7 @@
 ﻿#include "ofApp.h"
 #include "Internet.h"
 #include "Tweets.h"
+#include "Cities.h"
 
 void ofApp::setup()
 {
@@ -12,6 +13,9 @@ void ofApp::setup()
 	colourBackground.g = 250;
 	colourBackground.b = 250;
 
+	//Add cities
+
+
 	//Initial settings
 	ofSetBackgroundColor(colourBackground);
 	ofSetFrameRate(60);
@@ -21,6 +25,8 @@ void ofApp::setup()
 	timerSlider.set(700, 900, 50, 50);
 	searchBar.set(50, 210, 400, 50);
 	searchButton.set(450, 210, 50, 50);
+	dayBar.set(500, 210, 50, 50);
+	dayImage.set(550, 210, 50, 50);
 
 	//Twitter settings
 	client.registerSearchEvents(this);
@@ -62,7 +68,7 @@ void ofApp::update()
 			updateTweetWordSearch += 6000;
 			if (client.isRunning() == 0)
 			{
-				searchTweet(false, myTweetWords[updateTweetWordSearchCount]);
+				searchTweet(false, myTweetWords[updateTweetWordSearchCount], "", 0, searchType);
 			}
 			else
 			{
@@ -275,6 +281,8 @@ void ofApp::draw()
 				ofNoFill();
 				ofDrawRectangle(searchBar); //Search box
 				ofDrawRectangle(searchButton); //Search button
+				font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 15);
+				font.drawString(userInput, 60, 240);
 				search.draw(450, 220, 50, 30);
 			}
 			else
@@ -286,6 +294,29 @@ void ofApp::draw()
 				font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 15);
 				font.drawString(userInput, 60, 240);
 				search.draw(450, 220, 50, 30);
+			}
+
+			//Draw day box
+			if (!changeDayBoxColour)
+			{
+				ofSetColor(colourText);
+				ofNoFill();
+				ofDrawRectangle(dayBar); //Search box
+				font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 15);
+				font.drawString(userInputDay, 510, 240);
+				ofDrawRectangle(dayImage);
+				time.draw(550, 220, 50, 30);
+			}
+			else
+			{
+				ofSetColor(colourText);
+				ofFill();
+				ofDrawRectangle(dayBar); //Search box
+				ofDrawRectangle(dayImage);
+				ofSetColor(colourBackground);
+				font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 15);
+				font.drawString(userInputDay, 510, 240);
+				time.draw(550, 220, 50, 30);
 			}
 
 			//Draw text feed
@@ -580,14 +611,115 @@ void ofApp::drawMenu()
 }
 //COMPLETE
 
-void ofApp::searchTweet(bool archive, string text, string city)
+void ofApp::searchTweet(bool archive, string text, string city, int date, int type)
 {
 	if (archive)
 	{
 		ofxTwitter::SearchQuery query(text);
-		//query.setUntil(2019, 1, 29);
-		if()
-		query.setGeoCode(51.3811, -2.3590, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+
+
+		//CHECK FOR POPULARITY
+		if (type == 0)
+		{
+			query.setResultType(ofxTwitter::SearchQuery::ResultType::MIXED);
+		}
+		else if (type == 1)
+		{
+			query.setResultType(ofxTwitter::SearchQuery::ResultType::RECENT);
+		}
+		else if (type == 2)
+		{
+			query.setResultType(ofxTwitter::SearchQuery::ResultType::POPULAR);
+		}
+
+		//CHECK FOR DATE
+		if (date != 0)
+		{
+			int day = ofGetDay();
+			int month = ofGetMonth();
+			int year = ofGetYear();
+			for (int i = 0; i < date; i++)
+			{
+				day -= 1;
+				if (day == 0)
+				{
+					switch (month)
+					{
+					case 1:
+						day = 31;
+						month--;
+						year--;
+						break;
+					case 2:
+						day = 31;
+						month--;
+						break;
+					case 3:
+						day = 28;
+						month--;
+						break;
+					case 4:
+						day = 31;
+						month--;
+						break;
+					case 5:
+						day = 30;
+						month--;
+						break;
+					case 6:
+						day = 31;
+						month--;
+						break;
+					case 7:
+						day = 30;
+						month--;
+						break;
+					case 8:
+						day = 31;
+						month--;
+						break;
+					case 9:
+						day = 31;
+						month--;
+						break;
+					case 10:
+						day = 30;
+						month--;
+						break;
+					case 11:
+						day = 31;
+						month--;
+						break;
+					case 12:
+						day = 30;
+						month--;
+						break;
+					}
+				}
+			}
+			query.setUntil(year, month, day);
+		}
+		
+
+		
+		//CHECK FOR LOCATION
+		if (city == "Bath")
+		{
+			query.setGeoCode(51.3811, -2.3590, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+		}
+		else if (city == "Porto")
+		{
+			query.setGeoCode(41.15772, -8.61112, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+		}
+		else if (city == "Amsterdam")
+		{
+			query.setGeoCode(52.36017, 4.89579, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+		}
+		else if (city == "London")
+		{
+			query.setGeoCode(51.51770, -0.11352, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+		}
+		else if
 		query.setCount(10);
 		client.search(query);
 		resetSearch = true;
@@ -634,6 +766,8 @@ void ofApp::mousePressed(int x, int y, int button)
 	{
 		changeTextBoxColour = true;
 		userCanType = true;
+		changeDayBoxColour = false;
+		userCanTypeDay = false;
 	}
 	else if (searchButton.inside(xMouseClick, yMouseClick))
 	{
@@ -642,10 +776,30 @@ void ofApp::mousePressed(int x, int y, int button)
 		if (userInput != "")
 		{
 			count = 0;
-			searchTweet(true, userInput);
+			if (userInputDay == "")
+			{
+				userInputDay = "0";
+			}
+			howLongAgo = stoi(userInputDay);
+			cout << "days " << howLongAgo << endl;
+			searchTweet(true, userInput, "", howLongAgo, searchType);
+			userInputDay = "";
 			myTweets.clear();
 			userInput = "";
 		}
+	}
+
+	if (dayBar.inside(xMouseClick, yMouseClick))
+	{
+		changeDayBoxColour = true;
+		userCanTypeDay = true;
+		userCanType = false;
+		changeTextBoxColour = false;
+	}
+	else
+	{
+		changeDayBoxColour = false;
+		userCanTypeDay = false;
 	}
 }
 void ofApp::mouseMoved(int x, int y)
@@ -660,7 +814,6 @@ void ofApp::keyPressed(int key)
 {
 	if (userCanType)
 	{
-		cout << key << endl;
 		if(GetKeyState(VK_SHIFT) == 1 || GetKeyState(VK_SHIFT) == 0)
 		{
 			char convertedKey = key;
@@ -686,6 +839,14 @@ void ofApp::keyPressed(int key)
 			{
 				userInput += "\x23";
 			}
+		}
+	}
+	else if (userCanTypeDay)
+	{
+		if (key >= 48 && key <= 55 && userInputDay == "")
+		{
+			char convertedNumber = key;
+			userInputDay += convertedNumber;
 		}
 	}
 }

@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxTwitter.h"
 #include "Tweets.h"
+#include "Cities.h"
 
 class ofApp: public ofBaseApp
 {
@@ -25,14 +26,17 @@ public:
 	bool internetConnection;
 	bool reset = false;
 	bool changeTextBoxColour = false;
+	bool changeDayBoxColour = false;
 	bool userCanType = false;
+	bool userCanTypeDay = false;
 	bool resetSearch = false;
 	bool stop = false;
-	bool isShiftEnabled = false;
 
 	//Integers
 	int queuedTweets;
 	int count = 0;
+	int howLongAgo = 0;
+	int searchType = 3;
 
 	//Doubles
 	double tweetIntervalMS;
@@ -51,6 +55,7 @@ public:
 	//Tweet vectors
 	vector<Tweets> myTweets;
 	vector<string> myTweetWords;
+	vector<Cities> myCities;
 
 	//Timers
 	double updateTweetWordSearch = 0;
@@ -58,9 +63,10 @@ public:
 
 	//Strings
 	string userInput = "";
+	string userInputDay = "";
 
 	//Functions
-	void searchTweet(bool archive, string text);
+	void searchTweet(bool archive, string text, string city, int date, int type);
 
 	/********************************************GUI******************************************/
 
@@ -91,6 +97,8 @@ public:
 	ofRectangle timerBar;
 	ofRectangle searchBar;
 	ofRectangle searchButton;
+	ofRectangle dayBar;
+	ofRectangle dayImage;
 
 	//Enumerators
 	enum tabs {
