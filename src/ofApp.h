@@ -10,7 +10,7 @@
 class ofApp: public ofBaseApp
 {
 public:
-    //Declare app default functions
+    //Declare app default functions	
     void setup();
 	void update();
     void draw();
@@ -26,7 +26,6 @@ public:
 	//Bools
 	bool updateTweets = false;
 	bool internetConnection;
-	bool reset = false;
 	bool changeTextBoxColour = false;
 	bool changeDayBoxColour = false;
 	bool userCanType = false;
