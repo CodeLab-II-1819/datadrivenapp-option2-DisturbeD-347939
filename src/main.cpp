@@ -1,11 +1,3 @@
-/*
- Starter code for Data Driven App assignment CodeLab II
- Based on basic example of ofxTwitter by Christopher Baker
- <https://christopherbaker.net>
- SPDX-License-Identifier:    MIT
-*/
-
-
 #include "ofApp.h"
 
 int main()

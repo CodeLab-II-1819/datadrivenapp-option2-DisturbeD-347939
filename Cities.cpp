@@ -1,3 +1,6 @@
+#include "Cities.h"
+
+
 Cities::Cities(string name, double longitude, double latitude)
 {
 	this->name = name;

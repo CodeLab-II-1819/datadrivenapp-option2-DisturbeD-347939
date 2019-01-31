@@ -13,8 +13,15 @@ void ofApp::setup()
 	colourBackground.g = 250;
 	colourBackground.b = 250;
 
-	//Add cities
+	//Add cities - MAXIMUM 10 CITIES FOR DESIGN PURPOSES
+	myCities.push_back(Cities("World", 0, 0));
+	myCities.push_back(Cities("Bath", 51.37497, -2.37297));
+	myCities.push_back(Cities("London", 41.15772, -8.61112));
+	myCities.push_back(Cities("Amsterdam", 52.36017, 4.89579));
+	myCities.push_back(Cities("Porto", 41.15772, -8.61112));
 
+	//Set rectangles for cities
+	
 
 	//Initial settings
 	ofSetBackgroundColor(colourBackground);
@@ -23,10 +30,19 @@ void ofApp::setup()
 	//Default sliders
 	timerBar.set(500, 920, 450, 10);
 	timerSlider.set(700, 900, 50, 50);
+
+	//Default rectangles
 	searchBar.set(50, 210, 400, 50);
 	searchButton.set(450, 210, 50, 50);
 	dayBar.set(500, 210, 50, 50);
 	dayImage.set(550, 210, 50, 50);
+	recentType.set(600, 210, 100, 50); 
+	mixedType.set(700, 210, 100, 50);
+	popularType.set(800, 210, 100, 50);
+	for (int i = 0; i < myCities.size(); i++)
+	{
+		myCityRects.push_back(ofRectangle(1350, 300 + (i * 50), 100, 50));
+	}
 
 	//Twitter settings
 	client.registerSearchEvents(this);
@@ -441,11 +457,87 @@ void ofApp::draw()
 				}
 			}
 
+			//Display cities
+			for (int i = 0; i < myCityRects.size(); i++)
+			{
+				if (myCityRects[i].inside(xMouseClick, yMouseClick))
+				{
+					citySelected = i;
+				}
+
+				if (citySelected == i)
+				{
+					ofSetColor(colourText);
+					ofFill();
+					ofDrawRectangle(myCityRects[i]);
+					ofSetColor(colourBackground);
+					font.drawString(myCities[i].name, myCityRects[i].getX() + 5, myCityRects[i].getY() + 30);
+				}
+				else
+				{
+					ofSetColor(colourText);
+					ofNoFill();
+					ofDrawRectangle(myCityRects[i]);
+					font.drawString(myCities[i].name, myCityRects[i].getX() + 5, myCityRects[i].getY() + 30);
+				}
+			}
+
+			//Display search types
+			font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
+			if (searchType == 0)
+			{
+				ofSetColor(colourText);
+				ofFill();
+				ofDrawRectangle(recentType);
+				ofSetColor(colourBackground);
+			}
+			else
+			{
+				ofSetColor(colourText);
+				ofNoFill();
+				ofDrawRectangle(recentType);
+			}
+			;
+			font.drawString("Recent", recentType.getX() + 5, recentType.getY() + 40);
+
+			if (searchType == 1)
+			{
+				ofSetColor(colourText);
+				ofFill();
+				ofDrawRectangle(mixedType);
+				ofSetColor(colourBackground);
+			}
+			else
+			{
+				ofSetColor(colourText);
+				ofNoFill();
+				ofDrawRectangle(mixedType);
+			}
+			font.drawString("Mixed", mixedType.getX() + 5, mixedType.getY() + 40);
+
+			if (searchType == 2)
+			{
+				ofSetColor(colourText);
+				ofFill(); 
+				ofDrawRectangle(popularType);
+				ofSetColor(colourBackground);
+			}
+			else
+			{
+				ofSetColor(colourText);
+				ofNoFill();
+				ofDrawRectangle(popularType);
+			}
+			font.drawString("Popular", popularType.getX() + 5, popularType.getY() + 40);
+			
+			
 
 			break;
 		}
 		case SETTINGS:
 		{
+
+
 			break;
 		}
 		case QUIT:
@@ -700,26 +792,15 @@ void ofApp::searchTweet(bool archive, string text, string city, int date, int ty
 			query.setUntil(year, month, day);
 		}
 		
-
-		
 		//CHECK FOR LOCATION
-		if (city == "Bath")
+		for (int i = 1; i < myCities.size(); i++)
 		{
-			query.setGeoCode(51.3811, -2.3590, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+			if (city == myCities[i].name)
+			{
+				query.setGeoCode(myCities[i].lat, myCities[i].lng, 10, ofxTwitter::SearchQuery::UNITS_MILES);
+			}
 		}
-		else if (city == "Porto")
-		{
-			query.setGeoCode(41.15772, -8.61112, 10, ofxTwitter::SearchQuery::UNITS_MILES);
-		}
-		else if (city == "Amsterdam")
-		{
-			query.setGeoCode(52.36017, 4.89579, 10, ofxTwitter::SearchQuery::UNITS_MILES);
-		}
-		else if (city == "London")
-		{
-			query.setGeoCode(51.51770, -0.11352, 10, ofxTwitter::SearchQuery::UNITS_MILES);
-		}
-		else if
+
 		query.setCount(10);
 		client.search(query);
 		resetSearch = true;
@@ -782,7 +863,7 @@ void ofApp::mousePressed(int x, int y, int button)
 			}
 			howLongAgo = stoi(userInputDay);
 			cout << "days " << howLongAgo << endl;
-			searchTweet(true, userInput, "", howLongAgo, searchType);
+			searchTweet(true, userInput, myCities[citySelected].name, howLongAgo, searchType);
 			userInputDay = "";
 			myTweets.clear();
 			userInput = "";
@@ -800,6 +881,25 @@ void ofApp::mousePressed(int x, int y, int button)
 	{
 		changeDayBoxColour = false;
 		userCanTypeDay = false;
+	}
+
+	if (recentType.inside(xMouseClick, yMouseClick))
+	{
+		xMouseClick = 0;
+		yMouseClick = 0;
+		searchType = 0;
+	}
+	if (mixedType.inside(xMouseClick, yMouseClick))
+	{
+		xMouseClick = 0;
+		yMouseClick = 0;
+		searchType = 1;
+	}
+	if (popularType.inside(xMouseClick, yMouseClick))
+	{
+		xMouseClick = 0;
+		yMouseClick = 0;
+		searchType = 2;
 	}
 }
 void ofApp::mouseMoved(int x, int y)

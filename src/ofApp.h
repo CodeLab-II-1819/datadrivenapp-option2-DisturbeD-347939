@@ -36,7 +36,8 @@ public:
 	int queuedTweets;
 	int count = 0;
 	int howLongAgo = 0;
-	int searchType = 3;
+	int searchType = 1;
+	int citySelected = 0;
 
 	//Doubles
 	double tweetIntervalMS;
@@ -99,6 +100,12 @@ public:
 	ofRectangle searchButton;
 	ofRectangle dayBar;
 	ofRectangle dayImage;
+	ofRectangle mixedType;
+	ofRectangle recentType;
+	ofRectangle popularType;
+
+	vector<ofRectangle> myCityRects;
+	vector<ofRectangle> myColours;
 
 	//Enumerators
 	enum tabs {
