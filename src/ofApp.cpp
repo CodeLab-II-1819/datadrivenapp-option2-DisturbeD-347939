@@ -2,6 +2,7 @@
 #include "Internet.h"
 #include "Tweets.h"
 #include "Cities.h"
+#include "Colours.h"
 
 void ofApp::setup()
 {
@@ -12,6 +13,67 @@ void ofApp::setup()
 	colourBackground.r = 250;
 	colourBackground.g = 250;
 	colourBackground.b = 250;
+	int r = 255;
+	int g = 0;
+	int b = 0;
+	int state = 0;
+	for (int i = 0; i < 50; i++)
+	{
+		cout << r << " " << g << " " << b << endl;
+		myColours.push_back(Colours(r, g, b, 100 + (15 * (i % 10)), 200 + (30*(i / 10))));
+		switch (state)
+		{
+		case 0:
+			g += 36;
+			if (g >= 255)
+			{
+				g = 255;
+				state++;
+			}
+			break;
+		case 1:
+			r -= 36;
+			if (r <= 0)
+			{
+				r = 0;
+				state++;
+			}
+			break;
+		case 2:
+			b += 36;
+			if (b >= 255)
+			{
+				b = 255;
+				state++;
+			}
+			break;
+		case 3:
+			g -= 36;
+			if (g <= 0)
+			{
+				g = 0;
+				state++;
+			}
+			break;
+		case 4:
+			r += 36;
+			if (r >= 255)
+			{
+				r = 255;
+				state++;
+			}
+			break;
+		case 5:
+			b -= 36;
+			if (b <= 0)
+			{
+				b = 0;
+				state++;
+			}
+		default:
+			break;
+		}
+	}
 
 	//Add cities - MAXIMUM 10 CITIES FOR DESIGN PURPOSES
 	myCities.push_back(Cities("World", 0, 0));
@@ -127,6 +189,7 @@ void ofApp::update()
 
 void ofApp::draw()
 {
+	ofSetBackgroundColor(colourBackground);
 	array<ofRectangle, 10> myURLS;
 	
 
@@ -536,7 +599,54 @@ void ofApp::draw()
 		}
 		case SETTINGS:
 		{
+			ofNoFill();
+			ofSetColor(colourText);
+			font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
+			ofRectangle text(100, 100, 100, 50);
+			ofRectangle background(200, 100, 100, 50);
 
+			if (changeColourText)
+			{
+				ofSetColor(colourText);
+				ofFill();
+				ofDrawRectangle(text);
+				ofSetColor(colourBackground);
+				font.drawString("Text", text.getX() + 5, text.getY() + 40);
+				ofNoFill();
+				ofSetColor(colourText);
+				ofDrawRectangle(background);
+				font.drawString("Background", background.getX() + 5, background.getY() + 40);
+			}
+			else
+			{
+				ofSetColor(colourText);
+				ofNoFill();
+				ofDrawRectangle(text);
+				font.drawString("Text", text.getX() + 5, text.getY() + 40);
+				ofFill();
+				ofSetColor(colourText);
+				ofDrawRectangle(background);
+				ofSetColor(colourBackground);
+				font.drawString("Background", background.getX() + 5, background.getY() + 40);
+			}
+			
+			
+
+			if (text.inside(xMouseClick, yMouseClick))
+			{
+				changeColourText = true;
+			}
+			if (background.inside(xMouseClick, yMouseClick))
+			{
+				changeColourText = false;
+			}
+
+			ofFill();
+			for (int i = 0; i < myColours.size(); i++)
+			{	
+				ofSetColor(myColours[i].myColour);
+				ofDrawRectangle(myColours[i].myShape);
+			}
 
 			break;
 		}
@@ -900,6 +1010,21 @@ void ofApp::mousePressed(int x, int y, int button)
 		xMouseClick = 0;
 		yMouseClick = 0;
 		searchType = 2;
+	}
+
+	for (int i = 0; i < myColours.size(); i++)
+	{
+		if (myColours[i].myShape.inside(xMouseClick, yMouseClick))
+		{
+			if (changeColourText)
+			{
+				colourText = myColours[i].myColour;
+			}
+			else
+			{
+				colourBackground = myColours[i].myColour;
+			}
+		}
 	}
 }
 void ofApp::mouseMoved(int x, int y)

@@ -4,6 +4,8 @@
 #include "ofxTwitter.h"
 #include "Tweets.h"
 #include "Cities.h"
+#include "Colours.h"
+#include <fstream>
 
 class ofApp: public ofBaseApp
 {
@@ -31,6 +33,7 @@ public:
 	bool userCanTypeDay = false;
 	bool resetSearch = false;
 	bool stop = false;
+	bool changeColourText = true;
 
 	//Integers
 	int queuedTweets;
@@ -105,7 +108,7 @@ public:
 	ofRectangle popularType;
 
 	vector<ofRectangle> myCityRects;
-	vector<ofRectangle> myColours;
+	vector<Colours> myColours;
 
 	//Enumerators
 	enum tabs {
