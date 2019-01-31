@@ -8,6 +8,6 @@ Colours::Colours(int r, int g, int b, int x, int y)
 	myColour.a = 180;
 	myShape.setX(x);
 	myShape.setY(y);
-	myShape.setHeight(10);
-	myShape.setWidth(10);
+	myShape.setHeight(30);
+	myShape.setWidth(30);
 }

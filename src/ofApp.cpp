@@ -32,7 +32,7 @@ void ofApp::setup()
 	for (int i = 0; i < 50; i++)
 	{
 		cout << r << " " << g << " " << b << endl;
-		myColours.push_back(Colours(r, g, b, 100 + (15 * (i % 10)), 200 + (30*(i / 10))));
+		myColours.push_back(Colours(r, g, b, 100 + (45 * (i % 10)), 200 + (50*(i / 10))));
 		switch (state)
 		{
 		case 0:
@@ -86,6 +86,8 @@ void ofApp::setup()
 			break;
 		}
 	}
+	myColours.push_back(Colours(0, 0, 0, 100, 450));
+	myColours.push_back(Colours(255, 255, 255, 145, 450));
 
 	//Add cities - MAXIMUM 10 CITIES FOR DESIGN PURPOSES
 	myCities.push_back(Cities("World", 0, 0));
@@ -650,10 +652,14 @@ void ofApp::draw()
 				changeColourText = false;
 			}
 
-			ofFill();
+			
 			for (int i = 0; i < myColours.size(); i++)
 			{	
+				ofFill();
 				ofSetColor(myColours[i].myColour);
+				ofDrawRectangle(myColours[i].myShape);
+				ofSetColor(0, 0, 0);
+				ofNoFill();
 				ofDrawRectangle(myColours[i].myShape);
 			}
 
@@ -973,77 +979,84 @@ void ofApp::mousePressed(int x, int y, int button)
 	yMouseClick = y;
 	cout << xMouseClick << " " << yMouseClick << endl;
 
-	//Handle search input
-	if (searchBar.inside(xMouseClick, yMouseClick))
+	if (currentTab == SEARCH)
 	{
-		changeTextBoxColour = true;
-		userCanType = true;
-		changeDayBoxColour = false;
-		userCanTypeDay = false;
-	}
-	else if (searchButton.inside(xMouseClick, yMouseClick))
-	{
-		changeTextBoxColour = false;
-		userCanType = false;
-		if (userInput != "")
+		if (recentType.inside(xMouseClick, yMouseClick))
 		{
-			count = 0;
-			if (userInputDay == "")
+			xMouseClick = 0;
+			yMouseClick = 0;
+			searchType = 0;
+		}
+		if (mixedType.inside(xMouseClick, yMouseClick))
+		{
+			xMouseClick = 0;
+			yMouseClick = 0;
+			searchType = 1;
+		}
+		if (popularType.inside(xMouseClick, yMouseClick))
+		{
+			xMouseClick = 0;
+			yMouseClick = 0;
+			searchType = 2;
+		}
+
+		//Handle search input
+		if (searchBar.inside(xMouseClick, yMouseClick))
+		{
+			changeTextBoxColour = true;
+			userCanType = true;
+			changeDayBoxColour = false;
+			userCanTypeDay = false;
+		}
+		else if (searchButton.inside(xMouseClick, yMouseClick))
+		{
+			changeTextBoxColour = false;
+			userCanType = false;
+			if (userInput != "")
 			{
-				userInputDay = "0";
+				count = 0;
+				if (userInputDay == "")
+				{
+					userInputDay = "0";
+				}
+				howLongAgo = stoi(userInputDay);
+				cout << "days " << howLongAgo << endl;
+				searchTweet(true, userInput, myCities[citySelected].name, howLongAgo, searchType);
+				userInputDay = "";
+				myTweets.clear();
+				userInput = "";
 			}
-			howLongAgo = stoi(userInputDay);
-			cout << "days " << howLongAgo << endl;
-			searchTweet(true, userInput, myCities[citySelected].name, howLongAgo, searchType);
-			userInputDay = "";
-			myTweets.clear();
-			userInput = "";
+		}
+
+		if (dayBar.inside(xMouseClick, yMouseClick))
+		{
+			changeDayBoxColour = true;
+			userCanTypeDay = true;
+			userCanType = false;
+			changeTextBoxColour = false;
+		}
+		else
+		{
+			changeDayBoxColour = false;
+			userCanTypeDay = false;
 		}
 	}
+	
 
-	if (dayBar.inside(xMouseClick, yMouseClick))
+	if (currentTab == SETTINGS)
 	{
-		changeDayBoxColour = true;
-		userCanTypeDay = true;
-		userCanType = false;
-		changeTextBoxColour = false;
-	}
-	else
-	{
-		changeDayBoxColour = false;
-		userCanTypeDay = false;
-	}
-
-	if (recentType.inside(xMouseClick, yMouseClick))
-	{
-		xMouseClick = 0;
-		yMouseClick = 0;
-		searchType = 0;
-	}
-	if (mixedType.inside(xMouseClick, yMouseClick))
-	{
-		xMouseClick = 0;
-		yMouseClick = 0;
-		searchType = 1;
-	}
-	if (popularType.inside(xMouseClick, yMouseClick))
-	{
-		xMouseClick = 0;
-		yMouseClick = 0;
-		searchType = 2;
-	}
-
-	for (int i = 0; i < myColours.size(); i++)
-	{
-		if (myColours[i].myShape.inside(xMouseClick, yMouseClick))
+		for (int i = 0; i < myColours.size(); i++)
 		{
-			if (changeColourText)
+			if (myColours[i].myShape.inside(xMouseClick, yMouseClick))
 			{
-				colourText = myColours[i].myColour;
-			}
-			else
-			{
-				colourBackground = myColours[i].myColour;
+				if (changeColourText)
+				{
+					colourText = myColours[i].myColour;
+				}
+				else
+				{
+					colourBackground = myColours[i].myColour;
+				}
 			}
 		}
 	}
