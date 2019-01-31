@@ -31,9 +31,11 @@ public:
 	bool changeDayBoxColour = false;
 	bool userCanType = false;
 	bool userCanTypeDay = false;
+	bool userCanTypeWord = false;
 	bool resetSearch = false;
 	bool stop = false;
 	bool changeColourText = true;
+	
 
 	//Integers
 	int queuedTweets;
@@ -60,6 +62,7 @@ public:
 	vector<Tweets> myTweets;
 	vector<string> myTweetWords;
 	vector<Cities> myCities;
+	vector<string> mySearches;
 
 	//Timers
 	double updateTweetWordSearch = 0;
@@ -68,6 +71,7 @@ public:
 	//Strings
 	string userInput = "";
 	string userInputDay = "";
+	string userInputSearch = "";
 
 	//Functions
 	void searchTweet(bool archive, string text, string city, int date, int type);
@@ -92,6 +96,7 @@ public:
 	ofImage language;
 	ofImage time;
 	ofImage search;
+	ofImage deleteIt;
 
 	//Colour defaults
 	ofColor colourText;
@@ -110,6 +115,8 @@ public:
 	ofRectangle mixedType;
 	ofRectangle recentType;
 	ofRectangle popularType;
+	ofRectangle wordBar;
+	ofRectangle wordButton;
 
 	vector<ofRectangle> myCityRects;
 	vector<Colours> myColours;

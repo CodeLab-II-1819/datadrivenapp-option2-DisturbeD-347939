@@ -7,6 +7,7 @@
 void ofApp::setup()
 {
 	//Default colours
+	string readString;
 	readFile.open("settings.txt");
 	if (readFile.good())
 	{
@@ -23,6 +24,20 @@ void ofApp::setup()
 		colourBackground.g = stoi(get);
 		getline(readFile, get);
 		colourBackground.b = stoi(get);
+		
+		while (!readFile.eof())
+		{
+			readFile >> readString;
+			if (readString != "")
+			{
+				cout << readString << endl;
+				mySearches.push_back(readString);
+			}
+		}
+		if (!mySearches.empty() && mySearches.size() >= 2)
+		{
+			mySearches.erase(mySearches.end() - 1);
+		}
 	}
 	else
 	{
@@ -35,13 +50,17 @@ void ofApp::setup()
 	}
 	readFile.close();
 
+	if (mySearches.empty())
+	{
+		mySearches.push_back("Hello");
+	}
+
 	int r = 255;
 	int g = 0;
 	int b = 0;
 	int state = 0;
 	for (int i = 0; i < 50; i++)
 	{
-		cout << r << " " << g << " " << b << endl;
 		myColours.push_back(Colours(r, g, b, 100 + (45 * (i % 10)), 200 + (50*(i / 10))));
 		switch (state)
 		{
@@ -122,6 +141,8 @@ void ofApp::setup()
 	recentType.set(600, 210, 100, 50); 
 	mixedType.set(700, 210, 100, 50);
 	popularType.set(800, 210, 100, 50);
+	wordBar.set(700, 200, 200, 50);
+	wordButton.set(900, 200, 50, 50);
 	for (int i = 0; i < myCities.size(); i++)
 	{
 		myCityRects.push_back(ofRectangle(1350, 300 + (i * 50), 100, 50));
@@ -149,10 +170,13 @@ void ofApp::setup()
 	reply.load("images/reply.png");
 	time.load("images/time.png");
 	search.load("images/magnifying glass.png");
+	deleteIt.load("images/delete.png");
 
 	//Input words into tweet word vector
-	myTweetWords.push_back("die");
-	myTweetWords.push_back("live");
+	for (int i = 0; i < mySearches.size(); i++)
+	{
+		myTweetWords.push_back(mySearches[i]);
+	}
 }
 
 void ofApp::update()
@@ -623,6 +647,7 @@ void ofApp::draw()
 			ofNoFill();
 			ofSetColor(colourText);
 			font.loadFont("fonts/HelveticaNeueUltraLight.ttf", 12);
+			font.drawString("Add or remove more live search terms!", 700, 300);
 			ofRectangle text(100, 100, 100, 50);
 			ofRectangle background(200, 100, 100, 50);
 
@@ -650,8 +675,58 @@ void ofApp::draw()
 				ofSetColor(colourBackground);
 				font.drawString("Background", background.getX() + 5, background.getY() + 40);
 			}
+
+			ofSetColor(colourText);
+			ofNoFill();
+			array<ofRectangle, 10> myDeletes;
+			int whichDelete = 11;
+			for (int i = 0; i < myTweetWords.size(); i++)
+			{
+				ofDrawRectangle(1000, 200 + (i*50), 100, 50);
+				font.drawString(myTweetWords[i], 1005, 240 + (i * 50));
+				myDeletes[i].setX(1100);
+				myDeletes[i].setY(200 + (i * 50));
+				myDeletes[i].setWidth(50);
+				myDeletes[i].setHeight(50);
+				ofDrawRectangle(myDeletes[i]);
+				deleteIt.draw(1100, 200 + (i * 50), 50, 50);
+				if (myDeletes[i].inside(xMouseClick, yMouseClick))
+				{
+					whichDelete = i;
+					xMouseClick = 0;
+					yMouseClick = 0;
+				}
+			}
+			if (whichDelete != 11)
+			{
+				myTweetWords.erase(myTweetWords.begin() + whichDelete);
+				mySearches.erase(mySearches.begin() + whichDelete);
+			}
+
 			
-			
+			if (userCanTypeWord)
+			{
+				ofFill();
+			}
+			else
+			{
+				ofNoFill();
+			}
+			ofSetColor(colourText);
+			ofDrawRectangle(wordBar);
+			if (userCanTypeWord)
+			{
+				ofSetColor(colourBackground);
+			}
+			else
+			{
+				ofSetColor(colourText);
+			}
+			font.drawString(userInputSearch, wordBar.getX() + 5, wordBar.getY() + 40);
+			ofNoFill();
+			ofSetColor(colourText);
+			ofDrawRectangle(wordButton);
+			search.draw(wordButton.getX()+5, wordButton.getY()+5, 40, 40);
 
 			if (text.inside(xMouseClick, yMouseClick))
 			{
@@ -686,6 +761,10 @@ void ofApp::draw()
 				writeFile << to_string(colourBackground.r) << endl;
 				writeFile << to_string(colourBackground.g) << endl;
 				writeFile << to_string(colourBackground.b) << endl;
+				for (int i = 0; i < mySearches.size(); i++)
+				{
+					writeFile << mySearches[i] << endl;
+				}
 			}
 			writeFile.close();
 			
@@ -1068,6 +1147,23 @@ void ofApp::mousePressed(int x, int y, int button)
 				}
 			}
 		}
+		if (wordBar.inside(xMouseClick, yMouseClick))
+		{
+			userCanTypeWord = true;
+		}
+		else
+		{
+			userCanTypeWord = false;
+		}
+		if (wordButton.inside(xMouseClick, yMouseClick))
+		{
+			if (userInputSearch != "" && myTweetWords.size() < 10)
+			{
+				mySearches.push_back(userInputSearch);
+				myTweetWords.push_back(userInputSearch);
+				userInputSearch = "";
+			}
+		}
 	}
 }
 void ofApp::mouseMoved(int x, int y)
@@ -1080,7 +1176,7 @@ void ofApp::mouseMoved(int x, int y)
 //Key handling
 void ofApp::keyPressed(int key)
 {
-	if (userCanType)
+	if (userCanType && userInput.size() < 25)
 	{
 		if(GetKeyState(VK_SHIFT) == 1 || GetKeyState(VK_SHIFT) == 0)
 		{
@@ -1109,12 +1205,44 @@ void ofApp::keyPressed(int key)
 			}
 		}
 	}
-	else if (userCanTypeDay)
+	else if (userCanTypeDay && userInputDay.size() < 1)
 	{
 		if (key >= 48 && key <= 55 && userInputDay == "")
 		{
 			char convertedNumber = key;
 			userInputDay += convertedNumber;
+		}
+	}
+	else if (userCanTypeWord && userInputSearch.size() < 12)
+	{
+		if (key != 32)
+		{
+			if (GetKeyState(VK_SHIFT) == 1 || GetKeyState(VK_SHIFT) == 0)
+			{
+				char convertedKey = key;
+				if (key == 8)
+				{
+					if (userInputSearch.size() != 0)
+					{
+						userInputSearch.erase(userInputSearch.size() - 1, 1);
+					}
+				}
+				else
+				{
+					userInputSearch += convertedKey;
+				}
+			}
+			else
+			{
+				if (key == 34 || key == 64)
+				{
+					userInputSearch += "\x40";
+				}
+				if (key == 35 || key == 26)
+				{
+					userInputSearch += "\x23";
+				}
+			}
 		}
 	}
 }
