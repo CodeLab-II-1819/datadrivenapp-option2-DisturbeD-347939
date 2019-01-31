@@ -7,12 +7,24 @@
 void ofApp::setup()
 {
 	//Default colours
-	colourText.r = 29;
-	colourText.g = 161;
-	colourText.b = 242;
-	colourBackground.r = 250;
-	colourBackground.g = 250;
-	colourBackground.b = 250;
+	readFile.open("settings.txt");
+	if (readFile.good())
+	{
+		string get;
+		getline(readFile, get);
+		colourText.r = stoi(get);
+		getline(readFile, get);
+		colourText.g = stoi(get);
+		getline(readFile, get);
+		colourText.b = stoi(get);
+		getline(readFile, get);
+		colourBackground.r = stoi(get);
+		getline(readFile, get);
+		colourBackground.g = stoi(get);
+		getline(readFile, get);
+		colourBackground.b = stoi(get);
+	}
+
 	int r = 255;
 	int g = 0;
 	int b = 0;
@@ -81,9 +93,6 @@ void ofApp::setup()
 	myCities.push_back(Cities("London", 41.15772, -8.61112));
 	myCities.push_back(Cities("Amsterdam", 52.36017, 4.89579));
 	myCities.push_back(Cities("Porto", 41.15772, -8.61112));
-
-	//Set rectangles for cities
-	
 
 	//Initial settings
 	ofSetBackgroundColor(colourBackground);
@@ -652,6 +661,18 @@ void ofApp::draw()
 		}
 		case QUIT:
 		{
+			writeFile.open("settings.txt");
+			if (writeFile.good())
+			{
+				writeFile << to_string(colourText.r) << endl;
+				writeFile << to_string(colourText.g) << endl;
+				writeFile << to_string(colourText.b) << endl;
+				writeFile << to_string(colourBackground.r) << endl;
+				writeFile << to_string(colourBackground.g) << endl;
+				writeFile << to_string(colourBackground.b) << endl;
+			}
+			writeFile.close();
+			
 			ofExit();
 			break;
 		}

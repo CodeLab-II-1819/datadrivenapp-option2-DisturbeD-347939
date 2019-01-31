@@ -72,6 +72,10 @@ public:
 	//Functions
 	void searchTweet(bool archive, string text, string city, int date, int type);
 
+	//File handling
+	ifstream readFile;
+	ofstream writeFile;
+
 	/********************************************GUI******************************************/
 
 	//Functions
