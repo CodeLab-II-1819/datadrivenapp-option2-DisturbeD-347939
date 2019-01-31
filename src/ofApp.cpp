@@ -24,6 +24,16 @@ void ofApp::setup()
 		getline(readFile, get);
 		colourBackground.b = stoi(get);
 	}
+	else
+	{
+		colourText.r = 29;
+		colourText.g = 161;
+		colourText.b = 242;
+		colourBackground.r = 250;
+		colourBackground.g = 250;
+		colourBackground.b = 250;
+	}
+	readFile.close();
 
 	int r = 255;
 	int g = 0;
@@ -92,7 +102,7 @@ void ofApp::setup()
 	//Add cities - MAXIMUM 10 CITIES FOR DESIGN PURPOSES
 	myCities.push_back(Cities("World", 0, 0));
 	myCities.push_back(Cities("Bath", 51.37497, -2.37297));
-	myCities.push_back(Cities("London", 41.15772, -8.61112));
+	myCities.push_back(Cities("London", 51.51770, -0.11352));
 	myCities.push_back(Cities("Amsterdam", 52.36017, 4.89579));
 	myCities.push_back(Cities("Porto", 41.15772, -8.61112));
 
@@ -977,7 +987,6 @@ void ofApp::mousePressed(int x, int y, int button)
 {
 	xMouseClick = x;
 	yMouseClick = y;
-	cout << xMouseClick << " " << yMouseClick << endl;
 
 	if (currentTab == SEARCH)
 	{
